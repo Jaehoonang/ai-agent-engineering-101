@@ -1,37 +1,32 @@
-# Week 02 Experiment Report: ReAct vs. Plan-then-Execute
+# Week 02 Harness Comparison Report
 
 ## Part 1: Variant Definition
 
-The lecture categorizes agent harness design into five core axes:
-1. **Context Management**: How conversation history and tool outputs are accumulated and pruned.
-2. **Tool Granularity**: The level of abstraction and parameterization exposed to the model.
-3. **Termination Condition**: When and how the harness decides the task is finished (e.g., step caps, explicit answer signals).
-4. **Error Recovery**: How errors and unexpected tool outputs are fed back and handled.
-5. **Human Intervention Point**: Where human approval is required before proceeding (irreversible actions).
+The two harnesses differ along the **five axes of agent architecture** introduced in the lecture:
 
-The two evaluated harnesses set these axes differently:
-- **ReAct (`harness_react.py`)**: Uses online, step-by-step reasoning (Thought -> Action -> Observation). Context management retains the full chat history across every iteration. Termination relies on an iteration cap (`max_steps=8`) or an explicit finish response. Error recovery happens organically by feeding error observations back into the chat history for the next thought cycle.
-- **Plan-then-Execute (`harness_plan_execute.py`)**: Separates control flow into a distinct upfront planning phase (generating a complete JSON list of steps without tools) and an execution phase. Context management is partitioned between a planner chat and an execution chat. Termination and flexibility are governed by an explicit replan cap (`max_replan=1`) when execution hits `OFF_PLAN` conditions.
+| Axis | ReAct (`harness_react.py`) | Plan-then-Execute (`harness_plan_execute.py`) |
+|------|----------------------------|-----------------------------------------------|
+| **1. Context** | Full conversation history sent on every model call (`Chat` with `tools=True` by default) | Two separate conversations: planner (no tools, history = task + available tools) and executor (tools enabled, history = task + plan + step-by-step execution trace) |
+| **2. Granularity** | Single tool call per step; the model decides the next action after each observation | Planner emits the entire plan (JSON list) in one call; executor runs multiple tool calls per step until the step is satisfied or budget exhausted |
+| **3. Termination** | Iteration cap (`max_steps=8`); stops when model emits no tool calls | Fixed plan length + optional one replan (`max_replan=1`); executor stops after all steps complete, then a final answer call |
+| **4. Error Handling** | Tool errors returned as observations; model decides how to react | Step-level `OFF_PLAN` signal triggers at most one replan; tool errors inside a step are observed and the model may continue or emit `OFF_PLAN` |
+| **5. Intervention** | Human approval gate for `IRREVERSIBLE` tool calls (`interventions` counter) | No human-in-the-loop gate; flexibility limited to the single replan budget |
+
+**Key behavioral difference**: ReAct interleaves reasoning and action at every step, allowing the model to adapt dynamically. Plan-then-Execute commits to a full plan upfront, then executes it rigidly with at most one course correction.
 
 ## Part 2: Measurements
 
-The experiment executed both harnesses on the task: *"In app.log, which hour (HH:00) has the most ERROR lines? Answer with the hour in HH:00 form."* (`expected: 14:00`). Runs 2–6 and 8–11 encountered API rate-limit errors (`RateLimitError: 429`) due to free-tier provider quotas, while completed runs recorded tokens and iterations.
+| run | harness | success | tokens | iters | interventions | note |
+|-----|---------|---------|--------|-------|---------------|------|
+| 1 | react | X |  |  |  | crash: OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable |
+| 2 | react | X |  |  |  | crash: OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable |
+| 3 | react | X |  |  |  | crash: OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable |
+| 4 | plan_exec | X |  |  |  | crash: OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable |
+| 5 | plan_exec | X |  |  |  | crash: OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable |
+| 6 | plan_exec | X |  |  |  | crash: OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable |
 
-| Run | Harness | Success | Tokens | Iters | Interventions | Note |
-|---|---|---|---|---|---|---|
-| 1 | react | X | 14958 | 8 | 0 | MAX_STEPS reached: incomplete |
-| 2 | react | X | | | | crash: RateLimitError (429) |
-| 3 | react | X | | | | crash: RateLimitError (429) |
-| 4 | plan_exec | X | | | | crash: RateLimitError (429) |
-| 5 | plan_exec | X | | | | crash: RateLimitError (429) |
-| 6 | plan_exec | X | | | | crash: RateLimitError (429) |
-| 7 | react | X | 14986 | 8 | 0 | MAX_STEPS reached: incomplete |
-| 8 | react | X | | | | crash: RateLimitError (429) |
-| 9 | react | X | 14734 | 8 | 0 | MAX_STEPS reached: incomplete |
-| 10 | plan_exec | X | | | | crash: RateLimitError (429) |
-| 11 | plan_exec | X | | | | crash: RateLimitError (429) |
-| 12 | plan_exec | O | 20800 | 10 | 0 | replans=0 |
+All six runs failed due to a missing `OPENAI_API_KEY` in the execution environment. The configured provider was OpenAI-compatible (Gemini via `generativelanguage.googleapis.com`), but no API key was available.
 
 ## Part 3: Interpretation
 
-Comparing the two harnesses reveals distinct operational trade-offs mapped to their architectural axes. The ReAct harness consistently executed up to its maximum step limit (`max_steps=8`) across all valid runs, consuming ~14,700–14,986 tokens per run, but failed to reach the correct final answer (`14:00`) within the iteration cap because its online, exploratory control flow lacked a structured decomposition of log aggregation steps. In contrast, the Plan-then-Execute harness successfully solved the task in run 12 (succeeding with `14:00` in 10 iterations and 20,800 tokens, with 0 replans needed). This demonstrates that separating the planning axis from execution allows the agent to establish a clear procedural roadmap upfront (reading the log, filtering errors, grouping by hour, and finding the maximum), avoiding the wandering behavior seen in ReAct. However, Plan-then-Execute is more sensitive to model capabilities during the initial JSON plan generation, as evidenced by initial rate-limit and plan-parsing failure modes under restricted free-tier quotas.
+Since every run crashed before any model interaction, no meaningful token counts, iteration counts, or intervention data were collected. Both harnesses show identical failure modes (100% crash rate, 0% success), making comparative analysis impossible. To obtain valid measurements, a valid `OPENAI_API_KEY` with access to the Gemini 3.5 Flash Lite model must be supplied in the environment before re-running `run_ab.py --runs 3`.

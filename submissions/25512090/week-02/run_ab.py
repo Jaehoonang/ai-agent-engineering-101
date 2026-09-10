@@ -83,7 +83,6 @@ def main():
                             meter.iters if meter else "",
                             meter.interventions if meter else "", note])
                 f.flush()
-                time.sleep(15)
     print("\nresults.csv updated;", os.path.abspath("results.csv"))
 
 
