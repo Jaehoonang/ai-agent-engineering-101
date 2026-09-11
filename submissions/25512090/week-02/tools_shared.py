@@ -11,6 +11,7 @@ Provider is picked from the environment:
   AGENT_MODEL                    optional model override for either provider
 """
 import json
+import time
 import os
 import re
 from dataclasses import dataclass, field
@@ -162,7 +163,17 @@ class Chat:
                                              "description": t["description"],
                                              "parameters": t["parameters"]}}
                                for t in TOOL_SPECS]
-        resp = _get_client().chat.completions.create(**kwargs)
+        resp = None
+        for attempt in range(6):
+            try:
+                time.sleep(1.5)
+                resp = _get_client().chat.completions.create(**kwargs)
+                break
+            except Exception as e:
+                if attempt < 5 and any(k in str(e).lower() for k in ("429", "quota", "ratelimit", "resource_exhausted")):
+                    time.sleep(8 * (attempt + 1))
+                else:
+                    raise
         usage = resp.usage
         self.meter.add(getattr(usage, "prompt_tokens", 0),
                        getattr(usage, "completion_tokens", 0))
