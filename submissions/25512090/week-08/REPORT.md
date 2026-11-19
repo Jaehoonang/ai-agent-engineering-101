@@ -3,22 +3,28 @@
 ## 0. 중간 평가 매핑 (부품 구현 40 / 구조 독창성 30 / Round 3 순위 30)
 
 ### 0.1 기본 조건
-Round 3 정산 거래: **샵 234건, 바이어 11,475건** (각 20건 이상 충족, `https://market.ourolabs.ai/api/board` 실측, 2026-11-17 기준).
+Round 3 정산 거래: **샵 236건, 바이어 11,843건** (각 20건 이상 충족, `https://market.ourolabs.ai/api/board` 실측, 2026-11-19 기준).
 
-### 0.2 부품 구현 (40%) — 모델 / 컨텍스트 / 툴
-- **모델**: 거시 전략 Claude Sonnet 5(`strategy_daemon.py`, 30분 주기) + 실시간 실행 Claude Haiku 4.5(이벤트 단위) 이중화. `agent.json`의 `harness.macro_strategy_model`/`micro_execution_model`로 명시.
-- **컨텍스트(메모리/meta-harness)**: `memory_manager.py`(슬라이딩 윈도우 O(1) 원장 집계), `team_memory.py`(부서별 쓰로틀·카운터 JSON 영속화), `strategy.json`(거시 모델이 쓰고 모든 실행 모듈이 읽는 공유 가변 설정 — 원자적 교체), `negotiation_log.jsonl`/`credit_ratings.json`(자체 거래 이력·거래상대 신용 기록). `.market/*.json`은 키트가 쓰는 입력(읽기 전용).
-- **툴(8개 독립 프로세스, 각자 쓰로틀/원장 보유)**: `seller.py`(PricingTeam, Dutch-decay 가격), `market_buyer.py`(재고매칭+저가우선 랭킹+top-3 재시도 협상), `loan_engine.py`(대출/연체추심), `repo_engine.py`(레포/신용토큰), `futures_engine.py`(선도계약), `hegemony_engine.py`(신용평가), `forum_agent.py`(광고/아웃리치/청산공지).
-- 전체 부품 구현 상세는 §1~§18, 발견한 버그와 수정은 §19~§25.
+### 0.2 부품 구현 (40%) — `architecture.pdf`의 조직도와 1:1 대응
+`architecture.tex`를 조직도(organization chart) 형태로 재작성 — 루트(에이전트) 아래 4개 분과로 나누고, 그중 ①②③이 "부품 구현(모델/컨텍스트/툴)" 세 항목에 정확히 대응한다:
 
-### 0.3 구조의 독창성 (30%) — 1페이지 LaTeX figure
-`architecture.tex`/`architecture.pdf` (본 디렉터리) — 8부서 아키텍처 다이어그램 + 이번 세션에 발견·역산한 3대 핵심 통찰(§19, §22, §23 근거):
-1. `saved` 공식이 "정가 대비 할인율"이 아니라 "마진 점유율"이라는 걸 패치노트에서 역산 확인하고, 미체결 주문(-1)보다 더 나쁜 가격을 내는 것을 수학적으로 방지하는 1.25배 상한 도출.
-2. 자체 상점 선택 로직이 평판에 가격신호가 묻히는 구조였음을 발견, 저가 우선으로 재조정.
-3. 자체 `find_unit()`의 문자열 포함 방향이 거꾸로였던 버그(재고 있는데 "없다"고 오답)를 라이브 재현으로 확인·수정.
+| 조직도 분과 | 내용 |
+|---|---|
+| **① 모델** | 거시 전략 Claude Sonnet 5(`strategy_daemon.py`, 30분 주기 — 경쟁사/부실채권 스캔) + 실시간 실행 Claude Haiku 4.5(8개 부서 프로세스 전체, 이벤트 단위). `agent.json`의 `harness.macro_strategy_model`/`micro_execution_model`로 명시. |
+| **② 컨텍스트** (메모리 + meta-harness) | **메모리**: `memory_manager.py`(O(1) 슬라이딩 윈도우 원장 집계), `team_memory.py`(부서별 쓰로틀·카운터 JSON 영속화), `credit_ratings.json`/`negotiation_log.jsonl`(거래상대 신용·자체 거래이력). **meta-harness**: `strategy_daemon.py`(30분 루프)가 `strategy.json`(모든 실행 모듈이 읽는 공유 가변 설정, 원자적 교체)을 다시 씀 — 거시 모델이 미시 모듈들의 행동을 재구성하는 실질적 meta-harness. |
+| **③ 툴** (8개 독립 프로세스) | **거래실행팀**: `seller.py`(PricingTeam, Dutch-decay 가격), `market_buyer.py`(재고매칭+저가우선 랭킹+top-3 재시도 협상), `loan_engine.py`(대출/연체추심), `repo_engine.py`(레포/신용토큰). **시장정보·홍보팀**: `futures_engine.py`(선도계약), `hegemony_engine.py`(신용평가), `forum_agent.py`(광고/아웃리치/청산공지). |
+| ④ 가드레일 (전부서 공통, 참고) | 원가 하한, 파산 가드, 협상 상한(1.25×list), 재고매칭 게이트 — 부품 자체는 아니지만 모든 툴이 공유하는 구조적 제약이라 조직도에 함께 표시. |
+
+전체 부품 구현 상세는 §1~§18, 발견한 버그와 수정은 §19~§25.
+
+### 0.3 구조의 독창성 (30%) — 1페이지 LaTeX 조직도(organization chart)
+`architecture.tex`/`architecture.pdf`(본 디렉터리, `forest` 패키지로 작성) — 에이전트를 루트로 ①모델/②컨텍스트/③툴/④가드레일 4개 분과, ②③은 다시 하위분과(메모리/meta-harness, 거래실행팀/시장정보팀)로 나눈 2단 조직도. 하단에 이번 세션에 발견·역산한 3대 핵심 통찰(§19, §22, §23 근거)을 수식과 함께 정리:
+1. `saved` 공식이 "정가 대비 할인율"이 아니라 "마진 점유율"이라는 걸 패치노트에서 역산 확인하고, 미체결 주문(-1)보다 더 나쁜 가격을 내는 것을 수학적으로 방지하는 1.25배 상한 도출(③ `market_buyer.py`).
+2. 자체 상점 선택 로직이 평판에 가격신호가 묻히는 구조였음을 발견, 저가 우선으로 재조정(③ `market_buyer.py`).
+3. 자체 `find_unit()`의 문자열 포함 방향이 거꾸로였던 버그(재고 있는데 "없다"고 오답)를 라이브 재현으로 확인·수정(③ `seller.py`).
 
 ### 0.4 Round 3 순위 (30%) — Players 테이블 백분위
-보드 Players 테이블(샵 ALL + 바이어 ALL 합산) 실측: 샵 ALL **0.152**(book 0.5+revenue 0.3+stars 0.2 백분위), 바이어 ALL **0.374**(saved 0.5+forum 0.3+deals 0.1+posts 0.1), 합산 **0.526** — 전체 78개 Player 계정 중 **56위**. 추적 지표 상세와 변화 추이는 §19~§25(특히 §22 saved 공식 역산, §25 라운드 종료 임박 재고 청산).
+보드 Players 테이블(샵 ALL + 바이어 ALL 합산) 실측: 샵 ALL **0.153**(book 0.5+revenue 0.3+stars 0.2 백분위), 바이어 ALL **0.374**(saved 0.5+forum 0.3+deals 0.1+posts 0.1), 합산 **0.527** — 전체 79개 Player 계정 중 **56위**. 추적 지표 상세와 변화 추이는 §19~§25(특히 §22 saved 공식 역산, §25 라운드 종료 임박 재고 청산).
 
 ---
 
