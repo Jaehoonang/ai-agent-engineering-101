@@ -35,28 +35,26 @@
       [{Claude Sonnet 5\\\textit{거시 전략}\\큰 그림, 30분에 한 번만 판단}]
       [{Claude Haiku 4.5\\\textit{실시간 실행}\\8개 부서 전부, 매번 즉시 판단}]
     ]
-    [{\textbf{② 컨텍스트} (기억 + 전체 설정)}, fill=orange!15, font=\scriptsize\bfseries
-      [{기억(메모리)}, fill=orange!6
-        [{{\codefont memory\_manager.py}\\거래 기록을 빠르게\\요약해서 기억}]
-        [{{\codefont team\_memory.py}\\부서마다 ``방금 뭐\\했는지'' 따로 기억}]
-        [{{\codefont credit\_ratings.json}\\{\codefont negotiation\_log.jsonl}\\상대 신용도 + 우리 거래이력}]
-      ]
-      [{전체 설정(meta-harness)}, fill=orange!6
-        [{{\codefont strategy\_daemon.py}\\30분마다 시장을 보고\\전략을 다시 씀}]
-        [{{\codefont strategy.json}\\모든 부서가 같이\\읽는 설정 파일}]
-      ]
+    [{\textbf{② 공유 컨텍스트} (여러 팀이 같이 보는 것)}, fill=orange!15, font=\scriptsize\bfseries
+      [{{\codefont strategy\_daemon.py}\\거시모델이 30분마다\\시장 보고 전략 다시 씀}, fill=orange!6]
+      [{{\codefont strategy.json}\\모든 팀이 같이 읽는\\공유 설정 파일}, fill=orange!6]
+      [{{\codefont memory\_manager.py}\\{\codefont memory\_store.json}\\로열티팀+거시모델이\\같이 쓰는 판매기록}, fill=orange!6]
+      [{{\codefont credit\_ratings.json}\\신용평가팀이 만들고\\대출·구매팀이 같이 읽음}, fill=orange!6]
     ]
-    [{\textbf{③ 툴} (실제로 일하는 8개 부서)}, fill=green!12, font=\scriptsize\bfseries
+    [{\textbf{③ 8개 팀} (각자 자기 memory 파일을 따로 들고 있음)}, fill=green!12, font=\scriptsize\bfseries
       [{거래 실행팀}, fill=green!5
-        [{{\codefont seller.py}\\파는 쪽: 가격 정하기}]
-        [{{\codefont market\_buyer.py}\\사는 쪽: 싼 곳 찾고 협상}]
-        [{{\codefont loan\_engine.py}\\대출 운영}, draw, dashed, thick]
-        [{{\codefont repo\_engine.py}\\담보대출 운영}, draw, dashed, thick]
+        [{가격팀 ({\codefont seller.py})\\파는 가격 정하기\\memory: {\codefont pricing\_team\_memory.json}}]
+        [{로열티팀 ({\codefont seller.py})\\단골 바우처 발급\\memory: {\codefont loyalty\_team\_memory.json}}]
+        [{교차판매팀 ({\codefont seller.py})\\결제 때 대출 끼워팔기\\memory: {\codefont crosssell\_team\_memory.json}}]
+        [{{\codefont market\_buyer.py}\\사는 쪽: 싼 곳 찾고 협상\\memory: {\codefont negotiation\_log.jsonl}}]
+        [{{\codefont loan\_engine.py}\\대출 운영\\memory: {\codefont loan\_team\_memory.json}}, draw, dashed, thick]
+        [{{\codefont repo\_engine.py}\\담보대출 운영\\memory: {\codefont repo\_team\_memory.json}}, draw, dashed, thick]
       ]
       [{시장정보 \& 홍보팀}, fill=green!5
-        [{{\codefont futures\_engine.py}\\가격 고정 계약}, draw, dashed, thick]
-        [{{\codefont hegemony\_engine.py}\\상대 신용 평가}]
-        [{{\codefont forum\_agent.py}\\광고·홍보 글쓰기}]
+        [{{\codefont futures\_engine.py}\\가격 고정 계약\\memory: 따로 없음(장부만)}, draw, dashed, thick]
+        [{{\codefont hegemony\_engine.py}\\상대 신용 평가\\memory: {\codefont credit\_team\_memory.json}}]
+        [{광고팀 ({\codefont forum\_agent.py})\\광고·홍보 글쓰기\\memory: {\codefont ad\_team\_memory.json}}]
+        [{구매팀 ({\codefont forum\_agent.py})\\수요글 보고 답장\\memory: {\codefont purchase\_team\_memory.json}}]
       ]
     ]
     [{\textbf{④ 안전장치} (모든 부서 공통 규칙)}, fill=yellow!20, font=\scriptsize\bfseries

@@ -6,14 +6,14 @@
 Round 3 정산 거래: **샵 236건, 바이어 11,843건** (각 20건 이상 충족, `https://market.ourolabs.ai/api/board` 실측, 2026-11-19 기준).
 
 ### 0.2 부품 구현 (40%) — `architecture.pdf`의 조직도와 1:1 대응
-`architecture.tex`를 조직도(organization chart) 형태로 재작성 — 루트(에이전트) 아래 4개 분과로 나누고, 그중 ①②③이 "부품 구현(모델/컨텍스트/툴)" 세 항목에 정확히 대응한다:
+`architecture.tex`를 조직도(organization chart) 형태로 재작성 — 루트(에이전트) 아래 4개 분과로 나누고, 그중 ①②③이 "부품 구현(모델/컨텍스트/툴)" 세 항목에 정확히 대응한다. 메모리/컨텍스트는 "팀마다 따로" 보이도록 구성 — 각 팀 박스 안에 그 팀 **고유의** memory 파일명을 직접 표기하고, 여러 팀이 **같이** 보는 것만 ②로 분리했다:
 
 | 조직도 분과 | 내용 |
 |---|---|
 | **① 모델** | 거시 전략 Claude Sonnet 5(`strategy_daemon.py`, 30분 주기 — 경쟁사/부실채권 스캔) + 실시간 실행 Claude Haiku 4.5(8개 부서 프로세스 전체, 이벤트 단위). `agent.json`의 `harness.macro_strategy_model`/`micro_execution_model`로 명시. |
-| **② 컨텍스트** (메모리 + meta-harness) | **메모리**: `memory_manager.py`(O(1) 슬라이딩 윈도우 원장 집계), `team_memory.py`(부서별 쓰로틀·카운터 JSON 영속화), `credit_ratings.json`/`negotiation_log.jsonl`(거래상대 신용·자체 거래이력). **meta-harness**: `strategy_daemon.py`(30분 루프)가 `strategy.json`(모든 실행 모듈이 읽는 공유 가변 설정, 원자적 교체)을 다시 씀 — 거시 모델이 미시 모듈들의 행동을 재구성하는 실질적 meta-harness. |
-| **③ 툴** (8개 독립 프로세스) | **거래실행팀**: `seller.py`(PricingTeam, Dutch-decay 가격), `market_buyer.py`(재고매칭+저가우선 랭킹+top-3 재시도 협상), `loan_engine.py`(대출/연체추심), `repo_engine.py`(레포/신용토큰). **시장정보·홍보팀**: `futures_engine.py`(선도계약), `hegemony_engine.py`(신용평가), `forum_agent.py`(광고/아웃리치/청산공지). |
-| ④ 가드레일 (전부서 공통, 참고) | 원가 하한, 파산 가드, 협상 상한(1.25×list), 재고매칭 게이트 — 부품 자체는 아니지만 모든 툴이 공유하는 구조적 제약이라 조직도에 함께 표시. |
+| **② 공유 컨텍스트** (여러 팀이 같이 보는 것만) | `strategy_daemon.py`→`strategy.json`(모든 팀이 읽는 공유 설정, meta-harness), `memory_manager.py`/`memory_store.json`(로열티팀+거시모델이 같이 쓰는 판매기록), `credit_ratings.json`(신용평가팀이 만들고 대출·구매팀이 같이 읽는 공유 출력). |
+| **③ 8개 팀** (팀마다 자기 memory 파일을 따로 보유) | **거래실행팀**: 가격팀(`seller.py` PricingTeam, `pricing_team_memory.json`), 로열티팀(LoyaltyTeam, `loyalty_team_memory.json`), 교차판매팀(CrossSellTeam, `crosssell_team_memory.json`), `market_buyer.py`(`negotiation_log.jsonl`), `loan_engine.py`(`loan_team_memory.json`), `repo_engine.py`(`repo_team_memory.json`). **시장정보·홍보팀**: `futures_engine.py`(전용 memory 없이 장부만), `hegemony_engine.py`(`credit_team_memory.json`), 광고팀(`forum_agent.py` AdTeam, `ad_team_memory.json`), 구매팀(PurchaseTeam, `purchase_team_memory.json`). `team_memory.py`는 이 모든 팀별 memory 파일이 공통으로 쓰는 영속화 라이브러리(쓰로틀 타임스탬프+카운터). |
+| ④ 안전장치 (전부서 공통, 참고) | 원가 하한, 파산 가드, 협상 상한(1.25×list), 재고매칭 게이트 — 부품 자체는 아니지만 모든 툴이 공유하는 구조적 제약이라 조직도에 함께 표시. |
 
 전체 부품 구현 상세는 §1~§18, 발견한 버그와 수정은 §19~§25, 실패한 기능의 원인 분석은 §26.
 
