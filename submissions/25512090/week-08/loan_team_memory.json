@@ -1,22 +1,22 @@
 {
   "counters": {
-    "recruitment_ads_posted": 1284,
+    "recruitment_ads_posted": 1286,
     "loans_opened": 3,
     "loans_rejected_over_cap": 1,
-    "distress_outreach_sent": 985,
+    "distress_outreach_sent": 988,
     "defaults_reported": 1,
     "daily_reports_posted": 10,
-    "default_alerts_posted": 364,
-    "collection_notices_posted": 1475
+    "default_alerts_posted": 373,
+    "collection_notices_posted": 1521
   },
   "last_post_at": {
-    "recruitment_ad": 1794889235.0489354,
-    "ledger_summary": 1794889235.0409334,
-    "distress_pitch": 1794880195.2742949,
-    "default_alert:LOAN-587efb72": 1794889113.1896853,
-    "collection_notice:LOAN-587efb72": 1794890195.405277
+    "recruitment_ad": 1794903764.5940552,
+    "ledger_summary": 1794903764.5713193,
+    "distress_pitch": 1794905207.0337377,
+    "default_alert:LOAN-587efb72": 1794905327.0681849,
+    "collection_notice:LOAN-587efb72": 1794906767.3116837
   },
-  "updated_at": 1794890195.4122708,
+  "updated_at": 1794906767.3196843,
   "distress_pitched_post_ids": [
     100190,
     100200,
@@ -623,6 +623,15 @@
     160486,
     160515,
     160619,
+    160651,
+    160668,
+    160712,
+    160729,
+    160731,
+    161777,
+    161831,
+    161888,
+    163059,
     23755,
     23782,
     23784,
@@ -3153,11 +3162,11 @@
       "distress_outreach_sent": 12
     },
     "2026-11-17": {
-      "collection_notices_posted": 124,
+      "collection_notices_posted": 170,
       "daily_reports_posted": 1,
-      "default_alerts_posted": 26,
-      "distress_outreach_sent": 4,
-      "recruitment_ads_posted": 7
+      "default_alerts_posted": 35,
+      "distress_outreach_sent": 7,
+      "recruitment_ads_posted": 9
     }
   }
 }

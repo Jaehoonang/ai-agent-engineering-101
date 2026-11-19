@@ -1,10 +1,10 @@
 {
   "counters": {
-    "welcome_discounts_given": 1863,
-    "vouchers_issued": 1879
+    "welcome_discounts_given": 1871,
+    "vouchers_issued": 1888
   },
   "last_post_at": {},
-  "updated_at": 1794889570.0963085,
+  "updated_at": 1794904779.1988816,
   "daily": {
     "2026-11-07": {
       "welcome_discounts_given": 8,
@@ -47,8 +47,8 @@
       "vouchers_issued": 45
     },
     "2026-11-17": {
-      "welcome_discounts_given": 41,
-      "vouchers_issued": 41
+      "welcome_discounts_given": 49,
+      "vouchers_issued": 50
     }
   }
 }

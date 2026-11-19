@@ -1,6 +1,7 @@
 \documentclass[landscape,10pt]{article}
+\usepackage{fontspec}
+\setmainfont{Malgun Gothic}
 \usepackage[edges]{forest}
-\usepackage[utf8]{inputenc}
 \usepackage[margin=0.6cm]{geometry}
 \usepackage{xcolor}
 \usepackage{graphicx}
@@ -8,12 +9,16 @@
 \usepackage{amsmath}
 \pagestyle{empty}
 
+\newfontfamily\codefont{Consolas}
+
 \begin{document}
-\section*{\normalsize Week 08 / Round 3: Jaehoonang -- Organization Chart of the Agent}
-\noindent\footnotesize\textbf{Agent:} Jaehoonang (ID: 25512090) \quad
-\textbf{Market:} \texttt{market.ourolabs.ai} \quad
-\textbf{Harness:} \texttt{scripts/market\_kit.py} (unmodified, read-only) \quad
-\textbf{Round 3 Players rank:} shop ALL 0.152 + buyer ALL 0.374 = 0.526, rank 56/78
+\section*{\normalsize 8주차 / 라운드 3: Jaehoonang 에이전트 조직도}
+\noindent\footnotesize\textbf{읽는 법:} 맨 위 = 에이전트 전체 $\to$ 그 아래 4갈래 = 핵심 구성요소(모델/컨텍스트/툴/안전장치) $\to$ 더 아래 = 실제로 동작하는 코드 파일. 점선 테두리 = 실험해봤지만 외부 참여가 거의 없었던 기능(\S26 참고).
+\\[0.5mm]
+\noindent\footnotesize\textbf{에이전트:} Jaehoonang (학번 25512090) \quad
+\textbf{마켓:} {\codefont market.ourolabs.ai} \quad
+\textbf{하니스:} {\codefont scripts/market\_kit.py} (읽기전용, 수정 안 함) \quad
+\textbf{라운드3 순위:} 샵 ALL 0.153 + 바이어 ALL 0.374 = 0.527, 79명 중 56위
 
 \vspace{2mm}
 \begin{center}
@@ -22,55 +27,58 @@
   for tree={
     draw, thick, rounded corners, align=center, font=\tiny,
     parent anchor=south, child anchor=north,
-    l sep=4mm, s sep=1.5mm, inner sep=1.2mm,
+    l sep=4mm, s sep=1.5mm, inner sep=1.3mm,
     edge={-latex, thick},
   }
-  [{\textbf{Jaehoonang}\\Round 3 Market Agent\\(shop + buyer)}, fill=gray!20, font=\scriptsize\bfseries, l sep=6mm
-    [{\textbf{\textcircled{1} Models}}, fill=red!12, font=\scriptsize\bfseries
-      [{Claude Sonnet 5\\\textit{macro strategy}\\\texttt{strategy\_daemon.py}, 30 min loop}]
-      [{Claude Haiku 4.5\\\textit{micro execution}\\all 8 dept.\ processes, per-event}]
+  [{\textbf{Jaehoonang}\\라운드3 마켓 에이전트\\(상점 + 구매자)}, fill=gray!20, font=\scriptsize\bfseries, l sep=6mm
+    [{\textbf{① 모델} (생각하는 두뇌)}, fill=red!12, font=\scriptsize\bfseries
+      [{Claude Sonnet 5\\\textit{거시 전략}\\큰 그림, 30분에 한 번만 판단}]
+      [{Claude Haiku 4.5\\\textit{실시간 실행}\\8개 부서 전부, 매번 즉시 판단}]
     ]
-    [{\textbf{\textcircled{2} Context} (memory + meta-harness)}, fill=orange!15, font=\scriptsize\bfseries
-      [{Memory}, fill=orange!6
-        [{\texttt{memory\_manager.py}\\O(1) sliding-window\\ledger aggregation}]
-        [{\texttt{team\_memory.py}\\per-dept throttle\\+ counters, JSON}]
-        [{\texttt{credit\_ratings.json}\\\texttt{negotiation\_log.jsonl}\\counterparty \& self history}]
+    [{\textbf{② 컨텍스트} (기억 + 전체 설정)}, fill=orange!15, font=\scriptsize\bfseries
+      [{기억(메모리)}, fill=orange!6
+        [{{\codefont memory\_manager.py}\\거래 기록을 빠르게\\요약해서 기억}]
+        [{{\codefont team\_memory.py}\\부서마다 ``방금 뭐\\했는지'' 따로 기억}]
+        [{{\codefont credit\_ratings.json}\\{\codefont negotiation\_log.jsonl}\\상대 신용도 + 우리 거래이력}]
       ]
-      [{Meta-harness}, fill=orange!6
-        [{\texttt{strategy\_daemon.py}\\scans board + debtors\\every 30 min}]
-        [{\texttt{strategy.json}\\shared mutable config,\\read by every dept., atomic write}]
-      ]
-    ]
-    [{\textbf{\textcircled{3} Tools} (8 independent dept.\ processes)}, fill=green!12, font=\scriptsize\bfseries
-      [{Trade execution}, fill=green!5
-        [{\texttt{seller.py}\\PricingTeam: markup +\\Dutch-decay floor}]
-        [{\texttt{market\_buyer.py}\\stock-matched, cheapness-\\ranked, top-3 retry}]
-        [{\texttt{loan\_engine.py}\\LoanDesk: credit-scored\\lending + collection}]
-        [{\texttt{repo\_engine.py}\\Repo / JAE-Credit\\token lending}]
-      ]
-      [{Market intel.\ \& publicity}, fill=green!5
-        [{\texttt{futures\_engine.py}\\forward contracts,\\fixed strike}]
-        [{\texttt{hegemony\_engine.py}\\CreditRatingAgency:\\AAA/CCC tiers}]
-        [{\texttt{forum\_agent.py}\\AdTeam/PurchaseTeam:\\liquidation pitch, outreach}]
+      [{전체 설정(meta-harness)}, fill=orange!6
+        [{{\codefont strategy\_daemon.py}\\30분마다 시장을 보고\\전략을 다시 씀}]
+        [{{\codefont strategy.json}\\모든 부서가 같이\\읽는 설정 파일}]
       ]
     ]
-    [{\textbf{\textcircled{4} Guardrails} (shared by every tool above)}, fill=yellow!20, font=\scriptsize\bfseries
-      [{Cost floor\\price $\ge$ cost+10}]
-      [{Bankruptcy guard\\balance $\le$ 500k blocks restock}]
-      [{Negotiation cap\\offer $\le 1.25\times$list}]
-      [{Stock-match gate\\never cite an unheld SKU}]
+    [{\textbf{③ 툴} (실제로 일하는 8개 부서)}, fill=green!12, font=\scriptsize\bfseries
+      [{거래 실행팀}, fill=green!5
+        [{{\codefont seller.py}\\파는 쪽: 가격 정하기}]
+        [{{\codefont market\_buyer.py}\\사는 쪽: 싼 곳 찾고 협상}]
+        [{{\codefont loan\_engine.py}\\대출 운영}, draw, dashed, thick]
+        [{{\codefont repo\_engine.py}\\담보대출 운영}, draw, dashed, thick]
+      ]
+      [{시장정보 \& 홍보팀}, fill=green!5
+        [{{\codefont futures\_engine.py}\\가격 고정 계약}, draw, dashed, thick]
+        [{{\codefont hegemony\_engine.py}\\상대 신용 평가}]
+        [{{\codefont forum\_agent.py}\\광고·홍보 글쓰기}]
+      ]
+    ]
+    [{\textbf{④ 안전장치} (모든 부서 공통 규칙)}, fill=yellow!20, font=\scriptsize\bfseries
+      [{원가 밑으로는\\절대 안 팜}]
+      [{잔고 50만원 밑이면\\재고 매입 중단}]
+      [{협상 상한선\\(정가의 1.25배까지만)}]
+      [{없는 재고는\\있다고 말 안 함}]
     ]
   ]
 \end{forest}%
 }
 \end{center}
 
+\vspace{1mm}
+\noindent\scriptsize\textbf{점선 테두리 = 준비는 됐지만 외부 참여가 거의 없었던 기능 (\S26 실패 원인 분석):} 대출은 광고 2,274회에 성사 3건(0.13\%), 레포는 광고 160회에 성사 0건(0\%), 선도계약도 사실상 0\%대. 셋 다 \texttt{market.ourolabs.ai/agent.md}에 정의되지 않은, 우리가 직접 만든 사회적 규약(``포럼에 \texttt{[LOAN REQUEST] <}금액\texttt{>} 처럼 올리기'')이라 \textbf{상대 에이전트가 자발적으로 그 형식을 따라줘야만} 작동 -- 코드 자체는 끝까지 정상 동작했지만(유일한 성사 건 끝까지 정상 처리 확인), 외부 협조가 구조적으로 거의 없어 전환율이 바닥이었다.
+
 \vspace{1.5mm}
-\noindent\scriptsize\textbf{Three findings that drove this design (full evidence trail in REPORT.md \S19, \S22, \S23):}
+\noindent\scriptsize\textbf{이번 세션에 발견한 핵심 버그 3가지 (증거는 REPORT.md \S19, \S22, \S23):}
 \begin{enumerate}[nosep,leftmargin=5mm,itemsep=0pt]\scriptsize
-\item \textbf{Buyer `saved' is a margin-share formula, not a discount-vs-list ratio.} Patch 3.6: $\mathrm{saved}=\dfrac{\text{list}-\text{price}}{\text{list}-\text{cost}}$, clamped at $+1$; an unfulfilled order scores a flat $-1$, a refund $0$. Solving for the price that scores as badly as failure gives $2\cdot\text{list}-\text{cost}$; the platform's published worst-case cost band (75\% of list) bounds that at $1.25\times\text{list}$ -- so \texttt{negotiate()} (Tool \textcircled{3}, \texttt{market\_buyer.py}) caps every offer there instead of escalating to the full list-padded budget, which could score \emph{worse} than simply failing. A first attempt at exactly $1.0\times$list was too strict (deal rate measured 38\%$\to$9-15\%) and was corrected to $1.25\times$ after deriving the true break-even.
-\item \textbf{Shop selection was reputation-blind to price.} \texttt{handle\_shops()} summed raw review star-counts (uncapped by review volume, up to 50 points) against a price-cheapness signal weighted only $20\times$ ($-1$ to $+11$) -- rebalanced to a review-count-invariant average rating plus a $100\times$ cheapness term, so cheapness dominates as \texttt{saved} actually rewards.
-\item \textbf{Our own \texttt{find\_unit()} (Tool \textcircled{3}, \texttt{seller.py}) matching was backwards.} It checked whether our long product name was contained in the buyer's short query -- almost never true for the standard protocol message. A live repro (asking our own shop for a humidifier we held 6 units of) returned a false ``out of stock'' until fixed to strip request boilerplate and match the buyer's keyword against our category/name.
+\item \textbf{바이어 점수(saved)는 ``정가 대비 할인율''이 아니라 ``원가 대비 마진 점유율''이었다.} 공식: $\mathrm{saved}=\dfrac{\text{정가}-\text{가격}}{\text{정가}-\text{원가}}$, 최대 $+1$, 주문 실패는 무조건 $-1$. 계산해보니 ``실패보다 더 나쁜 가격''의 경계가 정가의 1.25배라서, 협상 상한을 거기에 맞춰 재설계(③ \texttt{market\_buyer.py}). 처음엔 1.0배로 너무 빡빡하게 잡아서 체결률이 38\%$\to$9-15\%로 폭락했던 걸 1.25배로 고쳐 복구.
+\item \textbf{상점을 고를 때 가격보다 평판(별점)이 훨씬 세게 반영되고 있었다.} 별점은 리뷰 수에 비례해 무한히 쌓이는데(최대 50점) 가격신호는 최대 11점뿐 -- 비싸도 인기 많은 상점이 항상 이김. 가격신호를 5배 키워서 역전시킴.
+\item \textbf{우리 가게 자신의 재고검색(\texttt{find\_unit()})이 방향이 거꾸로였다.} 손님의 짧은 질문이 우리 긴 상품명을 ``포함''해야만 매칭되게 돼 있어서, 사실상 거의 항상 ``재고 없음''으로 오답. 실제 보유 중인 가습기로 직접 재현해서 확인하고 수정.
 \end{enumerate}
 
 \end{document}

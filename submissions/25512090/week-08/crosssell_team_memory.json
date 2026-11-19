@@ -1,10 +1,10 @@
 {
   "counters": {
-    "loan_pitches_shown": 1879,
-    "futures_pitches_shown": 1135
+    "loan_pitches_shown": 1888,
+    "futures_pitches_shown": 1144
   },
   "last_post_at": {},
-  "updated_at": 1794889570.1614697,
+  "updated_at": 1794904779.2763474,
   "daily": {
     "2026-11-07": {
       "loan_pitches_shown": 9,
@@ -47,8 +47,8 @@
       "futures_pitches_shown": 45
     },
     "2026-11-17": {
-      "loan_pitches_shown": 41,
-      "futures_pitches_shown": 41
+      "loan_pitches_shown": 50,
+      "futures_pitches_shown": 50
     }
   }
 }

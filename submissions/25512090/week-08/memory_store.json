@@ -1,25 +1,25 @@
 {
   "competitor_profiles": {
     "dae-yangkim": {
-      "volume": 11528,
+      "volume": 13237,
       "refund_rate": 0.0,
-      "estimated_balance": 665827644,
+      "estimated_balance": 672265547,
       "loan_balance": 0,
-      "updated_at": 1794804845.951657
+      "updated_at": 1794905408.726698
     },
     "25620027": {
-      "volume": 40530,
+      "volume": 54378,
       "refund_rate": 0.0,
-      "estimated_balance": 584053425,
+      "estimated_balance": 335532754,
       "loan_balance": 0,
-      "updated_at": 1794804846.0233915
+      "updated_at": 1794905409.1571321
     },
     "moss-and-oak": {
-      "volume": 42488,
+      "volume": 45020,
       "refund_rate": 0.0,
-      "estimated_balance": 764785275,
+      "estimated_balance": 811674819,
       "loan_balance": 0,
-      "updated_at": 1794804845.8413765
+      "updated_at": 1794905408.5990028
     },
     "yms979": {
       "volume": 34159,
@@ -29,25 +29,25 @@
       "updated_at": 1794453203.6923578
     },
     "Kiro729": {
-      "volume": 42407,
+      "volume": 46508,
       "refund_rate": 0.0,
-      "estimated_balance": 575698786,
+      "estimated_balance": 563468928,
       "loan_balance": 0,
-      "updated_at": 1794804846.0679133
+      "updated_at": 1794905408.7621527
     },
     "kimauve": {
-      "volume": 24802,
+      "volume": 27591,
       "refund_rate": 0.0,
-      "estimated_balance": 471855987,
+      "estimated_balance": 507141077,
       "loan_balance": 0,
-      "updated_at": 1794804846.1341875
+      "updated_at": 1794905408.9109144
     },
     "shaun0927-lab1": {
       "volume": 6089,
       "refund_rate": 0.0,
-      "estimated_balance": 381233024,
+      "estimated_balance": 380689990,
       "loan_balance": 0,
-      "updated_at": 1794804846.1669397
+      "updated_at": 1794905408.9895306
     },
     "gom31-certified-goods": {
       "volume": 18416,
@@ -57,25 +57,25 @@
       "updated_at": 1794804846.348465
     },
     "seochanit": {
-      "volume": 16780,
+      "volume": 18115,
       "refund_rate": 0.0,
-      "estimated_balance": 696489376,
+      "estimated_balance": 716978221,
       "loan_balance": 0,
-      "updated_at": 1794804845.8751638
+      "updated_at": 1794905408.6841257
     },
     "mjforge": {
-      "volume": 18449,
+      "volume": 18668,
       "refund_rate": 0.0,
-      "estimated_balance": 518327228,
+      "estimated_balance": 512661332,
       "loan_balance": 0,
-      "updated_at": 1794804846.1019783
+      "updated_at": 1794905408.8592138
     },
     "kcwarni": {
-      "volume": 15854,
+      "volume": 17384,
       "refund_rate": 0.0,
-      "estimated_balance": 677825748,
+      "estimated_balance": 748287976,
       "loan_balance": 0,
-      "updated_at": 1794804845.9138288
+      "updated_at": 1794905408.6363182
     },
     "inextro": {
       "volume": 24835,
@@ -85,11 +85,11 @@
       "updated_at": 1794467621.300426
     },
     "myeonggi": {
-      "volume": 28433,
+      "volume": 29211,
       "refund_rate": 0.0,
-      "estimated_balance": 341011873,
+      "estimated_balance": 425676118,
       "loan_balance": 0,
-      "updated_at": 1794804846.2003317
+      "updated_at": 1794905408.9536097
     },
     "lee-sungsoo": {
       "volume": 17357,
@@ -99,45 +99,45 @@
       "updated_at": 1794321781.114586
     },
     "nocha12": {
-      "volume": 36823,
+      "volume": 56253,
       "refund_rate": 0.0,
-      "estimated_balance": 249249368,
+      "estimated_balance": 273029116,
       "loan_balance": 0,
-      "updated_at": 1794467621.4837198
+      "updated_at": 1794905409.2393696
     },
     "ddolcom": {
-      "volume": 28018,
+      "volume": 30645,
       "refund_rate": 0.0,
-      "estimated_balance": 309434485,
+      "estimated_balance": 377513859,
       "loan_balance": 0,
-      "updated_at": 1794804846.2704148
+      "updated_at": 1794905409.0657444
     },
     "dragonash": {
-      "volume": 31431,
+      "volume": 33491,
       "refund_rate": 0.0,
-      "estimated_balance": 338565422,
+      "estimated_balance": 346572586,
       "loan_balance": 0,
-      "updated_at": 1794804846.2370386
+      "updated_at": 1794905409.1170964
     },
     "sergiobuilds": {
-      "volume": 30460,
+      "volume": 34269,
       "refund_rate": 0.0,
-      "estimated_balance": 585173208,
+      "estimated_balance": 528989217,
       "loan_balance": 0,
-      "updated_at": 1794804845.988092
+      "updated_at": 1794905408.8083358
     },
     "buzllightyear": {
-      "volume": 38757,
+      "volume": 44759,
       "refund_rate": 0.0,
-      "estimated_balance": 249739230,
+      "estimated_balance": 290169627,
       "loan_balance": 0,
-      "updated_at": 1794804846.302942
+      "updated_at": 1794905409.2007089
     }
   },
   "subsidiary_registry": [],
   "sku_velocity": {
     "G630a202e": {
-      "frequency": 445,
+      "frequency": 446,
       "last_price": 2819
     },
     "Ga2374a1e": {
@@ -145,8 +145,8 @@
       "last_price": 328053
     },
     "Gea072173": {
-      "frequency": 17,
-      "last_price": 1300
+      "frequency": 18,
+      "last_price": 646
     },
     "G4c4977ca": {
       "frequency": 115,
@@ -165,8 +165,8 @@
       "last_price": 7847
     },
     "G10da0341": {
-      "frequency": 103,
-      "last_price": 14791
+      "frequency": 108,
+      "last_price": 6021
     },
     "G0b910f6c": {
       "frequency": 6,
@@ -181,11 +181,11 @@
       "last_price": 8354
     },
     "G4f3f0b94": {
-      "frequency": 50,
+      "frequency": 51,
       "last_price": 18339
     },
     "G4a99d47e": {
-      "frequency": 22,
+      "frequency": 23,
       "last_price": 5083
     },
     "Gccb01c5a": {
@@ -193,7 +193,7 @@
       "last_price": 10165
     }
   },
-  "last_synced": 1794889570.1022983,
+  "last_synced": 1794905409.2782114,
   "customer_profiles": {
     "VCH-450620dd": {
       "visits": 1,
@@ -17105,11 +17105,92 @@
       "total_spent": 6334,
       "first_seen": 1794889570.1022983,
       "last_seen": 1794889570.1022983
+    },
+    "VCH-a878db05": {
+      "visits": 1,
+      "skus": {
+        "G4a99d47e": 1
+      },
+      "total_spent": 5083,
+      "first_seen": 1794892498.7083976,
+      "last_seen": 1794892498.7083976
+    },
+    "VCH-a39bc6ca": {
+      "visits": 1,
+      "skus": {
+        "G10da0341": 1
+      },
+      "total_spent": 10288,
+      "first_seen": 1794893501.2314427,
+      "last_seen": 1794893501.2314427
+    },
+    "VCH-08996df6": {
+      "visits": 1,
+      "skus": {
+        "G10da0341": 1
+      },
+      "total_spent": 10288,
+      "first_seen": 1794894470.5433178,
+      "last_seen": 1794894470.5433178
+    },
+    "VCH-667153f9": {
+      "visits": 1,
+      "skus": {
+        "G4f3f0b94": 1
+      },
+      "total_spent": 18339,
+      "first_seen": 1794898466.9446373,
+      "last_seen": 1794898466.9446373
+    },
+    "VCH-88794c42": {
+      "visits": 1,
+      "skus": {
+        "G10da0341": 1
+      },
+      "total_spent": 13981,
+      "first_seen": 1794900453.1982186,
+      "last_seen": 1794900453.1982186
+    },
+    "VCH-6806545f": {
+      "visits": 1,
+      "skus": {
+        "G630a202e": 1
+      },
+      "total_spent": 2819,
+      "first_seen": 1794901111.5169644,
+      "last_seen": 1794901111.5169644
+    },
+    "VCH-fba89be0": {
+      "visits": 1,
+      "skus": {
+        "G10da0341": 1
+      },
+      "total_spent": 13981,
+      "first_seen": 1794903524.2058675,
+      "last_seen": 1794903524.2058675
+    },
+    "VCH-88e34f3c": {
+      "visits": 1,
+      "skus": {
+        "Gea072173": 1
+      },
+      "total_spent": 646,
+      "first_seen": 1794904209.3540623,
+      "last_seen": 1794904209.3540623
+    },
+    "VCH-c665f5b5": {
+      "visits": 1,
+      "skus": {
+        "G10da0341": 1
+      },
+      "total_spent": 6021,
+      "first_seen": 1794904779.2062597,
+      "last_seen": 1794904779.2062597
     }
   },
   "market_benchmark": {
     "top_shop_count": 15,
-    "median_turnover_deals_per_unit": 47.739,
-    "updated_at": 1794804846.3813906
+    "median_turnover_deals_per_unit": 52.374,
+    "updated_at": 1794905409.2782114
   }
 }
