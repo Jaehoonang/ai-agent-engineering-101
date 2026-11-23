@@ -1,82 +1,151 @@
-\documentclass[landscape,10pt]{article}
+\documentclass[landscape,11pt]{article}
 \usepackage{fontspec}
 \setmainfont{Malgun Gothic}
-\usepackage[edges]{forest}
-\usepackage[margin=0.6cm]{geometry}
+\usepackage[margin=0.9cm]{geometry}
 \usepackage{xcolor}
-\usepackage{graphicx}
+\usepackage{array}
 \usepackage{enumitem}
 \usepackage{amsmath}
+\usepackage{tabularx}
 \pagestyle{empty}
-
 \newfontfamily\codefont{Consolas}
 
-\begin{document}
-\section*{\normalsize 8주차 / 라운드 3: Jaehoonang 에이전트 조직도}
-\noindent\footnotesize\textbf{읽는 법:} 맨 위 = 에이전트 전체 $\to$ 그 아래 4갈래 = 핵심 구성요소(모델/컨텍스트/툴/안전장치) $\to$ 더 아래 = 실제로 동작하는 코드 파일. 점선 테두리 = 실험해봤지만 외부 참여가 거의 없었던 기능(\S26 참고).
-\\[0.5mm]
-\noindent\footnotesize\textbf{에이전트:} Jaehoonang (학번 25512090) \quad
-\textbf{마켓:} {\codefont market.ourolabs.ai} \quad
-\textbf{하니스:} {\codefont scripts/market\_kit.py} (읽기전용, 수정 안 함) \quad
-\textbf{라운드3 순위:} 샵 ALL 0.153 + 바이어 ALL 0.374 = 0.527, 79명 중 56위
-
-\vspace{2mm}
-\begin{center}
-\resizebox{\linewidth}{!}{%
-\begin{forest}
-  for tree={
-    draw, thick, rounded corners, align=center, font=\tiny,
-    parent anchor=south, child anchor=north,
-    l sep=4mm, s sep=1.5mm, inner sep=1.3mm,
-    edge={-latex, thick},
-  }
-  [{\textbf{Jaehoonang}\\라운드3 마켓 에이전트\\(상점 + 구매자)}, fill=gray!20, font=\scriptsize\bfseries, l sep=6mm
-    [{\textbf{① 모델} (생각하는 두뇌)}, fill=red!12, font=\scriptsize\bfseries
-      [{Claude Sonnet 5\\\textit{거시 전략}\\큰 그림, 30분에 한 번만 판단}]
-      [{Claude Haiku 4.5\\\textit{실시간 실행}\\8개 부서 전부, 매번 즉시 판단}]
-    ]
-    [{\textbf{② 공유 컨텍스트} (여러 팀이 같이 보는 것)}, fill=orange!15, font=\scriptsize\bfseries
-      [{{\codefont strategy\_daemon.py}\\거시모델이 30분마다\\시장 보고 전략 다시 씀}, fill=orange!6]
-      [{{\codefont strategy.json}\\모든 팀이 같이 읽는\\공유 설정 파일}, fill=orange!6]
-      [{{\codefont memory\_manager.py}\\{\codefont memory\_store.json}\\로열티팀+거시모델이\\같이 쓰는 판매기록}, fill=orange!6]
-      [{{\codefont credit\_ratings.json}\\신용평가팀이 만들고\\대출·구매팀이 같이 읽음}, fill=orange!6]
-    ]
-    [{\textbf{③ 8개 팀} (각자 자기 memory 파일을 따로 들고 있음)}, fill=green!12, font=\scriptsize\bfseries
-      [{거래 실행팀}, fill=green!5
-        [{가격팀 ({\codefont seller.py})\\파는 가격 정하기\\memory: {\codefont pricing\_team\_memory.json}}]
-        [{로열티팀 ({\codefont seller.py})\\단골 바우처 발급\\memory: {\codefont loyalty\_team\_memory.json}}]
-        [{교차판매팀 ({\codefont seller.py})\\결제 때 대출 끼워팔기\\memory: {\codefont crosssell\_team\_memory.json}}]
-        [{{\codefont market\_buyer.py}\\사는 쪽: 싼 곳 찾고 협상\\memory: {\codefont negotiation\_log.jsonl}}]
-        [{{\codefont loan\_engine.py}\\대출 운영\\memory: {\codefont loan\_team\_memory.json}}, draw, dashed, thick]
-        [{{\codefont repo\_engine.py}\\담보대출 운영\\memory: {\codefont repo\_team\_memory.json}}, draw, dashed, thick]
-      ]
-      [{시장정보 \& 홍보팀}, fill=green!5
-        [{{\codefont futures\_engine.py}\\가격 고정 계약\\memory: 따로 없음(장부만)}, draw, dashed, thick]
-        [{{\codefont hegemony\_engine.py}\\상대 신용 평가\\memory: {\codefont credit\_team\_memory.json}}]
-        [{광고팀 ({\codefont forum\_agent.py})\\광고·홍보 글쓰기\\memory: {\codefont ad\_team\_memory.json}}]
-        [{구매팀 ({\codefont forum\_agent.py})\\수요글 보고 답장\\memory: {\codefont purchase\_team\_memory.json}}]
-      ]
-    ]
-    [{\textbf{④ 안전장치} (모든 부서 공통 규칙)}, fill=yellow!20, font=\scriptsize\bfseries
-      [{원가 밑으로는\\절대 안 팜}]
-      [{잔고 50만원 밑이면\\재고 매입 중단}]
-      [{협상 상한선\\(정가의 1.25배까지만)}]
-      [{없는 재고는\\있다고 말 안 함}]
-    ]
-  ]
-\end{forest}%
+% ---- one self-contained department card: #1 title #2 file #3 status-color #4 status-text #5 body
+\newcommand{\deptbox}[5]{%
+  \fbox{\begin{minipage}[t][3.9cm][t]{4.55cm}
+    \colorbox{#3}{\makebox[\linewidth][l]{\small\bfseries\strut~#1}}\\[1mm]
+    {\scriptsize\codefont #2}\\[0.5mm]
+    {\scriptsize\bfseries #4}\\[1mm]
+    {\scriptsize #5}
+  \end{minipage}}%
 }
+
+\begin{document}
+
+% ============================================================ PAGE 1: ORG CHART, ONE BOX PER DEPARTMENT
+\begin{center}
+{\Large\bfseries Jaehoonang 에이전트 조직도 (Round 3 / Week 8 개정판 2)}\\[1mm]
+{\footnotesize 학번 25512090 \quad 마켓 \texttt{market.ourolabs.ai} \quad 하니스 \texttt{scripts/market\_kit.py}(읽기전용) \quad
+최종 성적: 샵 ALL 0.160 + 바이어 ALL 0.374 = 0.396, 학생 46명 중 42위 (\texttt{/api/board} 실측)}
 \end{center}
 
-\vspace{1mm}
-\noindent\scriptsize\textbf{점선 테두리 = 준비는 됐지만 외부 참여가 거의 없었던 기능 (\S26 실패 원인 분석):} 대출은 광고 2,274회에 성사 3건(0.13\%), 레포는 광고 160회에 성사 0건(0\%), 선도계약도 사실상 0\%대. 셋 다 \texttt{market.ourolabs.ai/agent.md}에 정의되지 않은, 우리가 직접 만든 사회적 규약(``포럼에 \texttt{[LOAN REQUEST] <}금액\texttt{>} 처럼 올리기'')이라 \textbf{상대 에이전트가 자발적으로 그 형식을 따라줘야만} 작동 -- 코드 자체는 끝까지 정상 동작했지만(유일한 성사 건 끝까지 정상 처리 확인), 외부 협조가 구조적으로 거의 없어 전환율이 바닥이었다.
+\vspace{2mm}
+\noindent\footnotesize\textbf{읽는 법:} 아래 10개 상자가 실제로 코드로 짜서 돌린 부서(팀) 전부다. 서로 선으로 안 이었다 — 각 부서는 독립된 파일/클래스라 따로 떼서 봐도 이해된다.
+\colorbox{green!25}{\strut~초록 제목~} = 라운드 내내 실제로 작동하며 점수에 기여.
+\colorbox{yellow!40}{\strut~노란 제목~} = 코드는 정상 동작했지만 거래가 거의/전혀 안 붙음. 자세한 원인은 2페이지.
 
-\vspace{1.5mm}
-\noindent\scriptsize\textbf{이번 세션에 발견한 핵심 버그 3가지 (증거는 REPORT.md \S19, \S22, \S23):}
-\begin{enumerate}[nosep,leftmargin=5mm,itemsep=0pt]\scriptsize
-\item \textbf{바이어 점수(saved)는 ``정가 대비 할인율''이 아니라 ``원가 대비 마진 점유율''이었다.} 공식: $\mathrm{saved}=\dfrac{\text{정가}-\text{가격}}{\text{정가}-\text{원가}}$, 최대 $+1$, 주문 실패는 무조건 $-1$. 계산해보니 ``실패보다 더 나쁜 가격''의 경계가 정가의 1.25배라서, 협상 상한을 거기에 맞춰 재설계(③ \texttt{market\_buyer.py}). 처음엔 1.0배로 너무 빡빡하게 잡아서 체결률이 38\%$\to$9-15\%로 폭락했던 걸 1.25배로 고쳐 복구.
-\item \textbf{상점을 고를 때 가격보다 평판(별점)이 훨씬 세게 반영되고 있었다.} 별점은 리뷰 수에 비례해 무한히 쌓이는데(최대 50점) 가격신호는 최대 11점뿐 -- 비싸도 인기 많은 상점이 항상 이김. 가격신호를 5배 키워서 역전시킴.
-\item \textbf{우리 가게 자신의 재고검색(\texttt{find\_unit()})이 방향이 거꾸로였다.} 손님의 짧은 질문이 우리 긴 상품명을 ``포함''해야만 매칭되게 돼 있어서, 사실상 거의 항상 ``재고 없음''으로 오답. 실제 보유 중인 가습기로 직접 재현해서 확인하고 수정.
-\end{enumerate}
+\vspace{3mm}
+\begin{center}
+\textbf{\normalsize 거래실행본부 — 손님 응대 + 우리가 사는 쪽, 샵 book / 바이어 saved 점수에 직접 연결}\\[2mm]
+\deptbox{1. 가격팀}{seller.py / PricingTeam}{green!25}{상태: 작동}
+  {원가 $\times$ 마크업으로 호가 계산. 오래 안 팔리면 시간이 갈수록 자동 할인, 최저가는 원가+1\%(손해는 절대 안 봄).}
+\hspace{2mm}
+\deptbox{2. 로열티팀}{seller.py / LoyaltyTeam}{green!25}{상태: 작동}
+  {첫 손님 5\% 환영 할인. 재구매 손님에게는 ``더 낸 만큼'' 정확히 바우처로 환급.}
+\hspace{2mm}
+\deptbox{3. 교차판매팀}{seller.py / CrossSellTeam}{green!25}{상태: 작동(보조)}
+  {결제 메시지에 대출/담보대출 코드가 같이 오면 그 자리에서 상환 처리까지 끼워 넣음.}
+\hspace{2mm}
+\deptbox{4. 구매협상팀}{market\_buyer.py}{green!25}{상태: 작동, 이번에 가장 크게 개선}
+  {우리가 사는 쪽일 때: 진짜 재고 있는 가게만 추려 가격을 협상. 체결률 8.6\%$\to$33.3\%(2페이지 성공 사례 \#1,\#2).}
+\hspace{2mm}
+\deptbox{5. 대출팀}{loan\_engine.py}{yellow!40}{상태: 거의 미작동}
+  {다른 가게에 신용으로 물건을 사줘(=대출) 이자 받기. 광고 2,274회, 성사 3건(0.13\%), 상환 0건. 2페이지 실패 사례 참고.}
+
+\vspace{3mm}
+\deptbox{6. 대차거래팀}{repo\_engine.py}{yellow!40}{상태: 미작동}
+  {담보 잡고 돈을 빌려주며 양도 가능한 ``신용 토큰''을 발행. 광고 160회, 성사 0건.}
+\hspace{2mm}
+\deptbox{7. 선도계약팀}{futures\_engine.py}{yellow!40}{상태: 미작동}
+  {``지금 가격에 나중에 사겠다'' 약정서 발행하고 웃돈을 받음. 성사 사실상 0\%대.}
+\hspace{2mm}
+\deptbox{8. 신용평가팀}{hegemony\_engine.py}{green!25}{상태: 작동}
+  {다른 가게의 공개 리뷰를 보고 AAA$\sim$CCC 등급을 매김. 대출팀·구매협상팀이 이 등급을 사용.}
+\hspace{2mm}
+\deptbox{9. 광고팀}{forum\_agent.py / AdTeam}{green!25}{상태: 작동, 좋아요 22배}
+  {포럼 글에 ``진짜 거래 번호(refs)''를 붙여 올림 — 순수 광고 문구보다 훨씬 잘 먹힘(2페이지 성공 사례 \#4).}
+\hspace{2mm}
+\deptbox{10. 구매상담팀}{forum\_agent.py / PurchaseTeam}{green!25}{상태: 작동}
+  {포럼에 ``이거 삽니다'' 글이 오면, 우리가 진짜 갖고 있는 재고일 때만 답장(없는 걸 있다고 안 함).}
+\end{center}
+
+\vspace{3mm}
+\begin{center}
+\textbf{\normalsize 전사 공통 자원 — 특정 부서가 아니라 모두가 같이 쓰는 것}\\[2mm]
+\deptbox{모델 (설계 전용)}{agent.json harness}{gray!20}{런타임엔 미사용}
+  {Claude Sonnet 5 = 거시전략(strategy\_daemon.py) 설계, Claude Haiku 4.5 = 8개 팀 실시간 로직 설계. 실제 라운드 중엔 LLM API를 한 번도 안 부름 — 전부 결정론적 Python.}
+\hspace{2mm}
+\deptbox{공유 설정 strategy.json}{strategy\_daemon.py}{gray!20}{일부만 실사용}
+  {마크업·보증시간·로열티 비율 등은 실제로 쓰임. 하지만 선언된 키 10개는 어떤 코드도 안 읽는 ``유령 설정''(2페이지 정직 보고).}
+\hspace{2mm}
+\deptbox{안전장치 4가지}{(all departments)}{gray!20}{전부 적용 중}
+  {①원가 밑으로 안 팜 ②잔고 안전선 밑이면 매입/대출 중단 ③협상 상한 1.25$\times$list ④없는 재고는 없다고 답함.}
+\end{center}
+
+\newpage
+% ============================================================ PAGE 2: SUCCESS STORIES, FAILURE ANALYSIS, LESSONS
+\begin{center}
+{\Large\bfseries 계획 vs 결과 — 성공 사례, 실패 사례, 그리고 정직 보고}
+\end{center}
+
+\vspace{2mm}
+\noindent{\large\bfseries 1. 성공 사례 — 이번 세션에 고친 버그가 숫자로 어떻게 바뀌었나}
+
+\vspace{1mm}
+\noindent\begin{tabularx}{\linewidth}{|p{4.6cm}|X|}
+\hline
+\textbf{고친 것} & \textbf{전/후 숫자} \\ \hline
+① 상점 선택 시 ``재고 실제로 맞는 가게''만 먼저 거름 (REPORT.md \S19) &
+  바이어 체결률 평생 평균 8.6\% $\to$ 배포 직후 샘플 33.3\% (3.9배). saved -0.1709 $\to$ -0.0035로 급등 \\ \hline
+② 협상 상한을 ``실패보다 나쁜 가격''의 수학적 경계 $\min(\text{budget},\,1.25\times\text{list})$ 로 설정 (\S22) &
+  1차 시도(정가 상한 1.0배)는 체결률 38\%$\to$9-15\%로 폭락해 폐기. 1.25배로 재조정 후 체결률 26\%대 유지, saved-vs-list 10-12\%$\to$22.3\% \\ \hline
+③ 자기 재고 검색(\texttt{find\_unit}) 방향이 거꾸로였던 버그 수정 (\S23.2) &
+  ``가습기 보유 중인데 Out of stock 오답'' $\to$ 수정 후 동일 질의에 즉시 정상 호가+서명 영수증. 라이브 재현으로 직접 확인 \\ \hline
+④ 포럼 글에 실거래 원장 번호(\texttt{refs}) 연결 (\S17.2--17.3) &
+  \texttt{refs} 있는 글 평균 좋아요 5.79 vs 없는 글 0.26 (22배 차이). 우리 글 4건 전부 \texttt{refs} 비어있던 것을 발견해 수정 \\ \hline
+⑤ 재고 회전율(\texttt{sku\_velocity}) 기반 재입고로 전환 (\S14.2) &
+  실제 베스트셀러(407회·120회·77회 판매 이력 SKU 등) 전원이 재입고 후보에 포함됨을 드라이런으로 확인 \\ \hline
+⑥ 평판(별점 총합) 대신 가격신호를 가중해 상점 선택 재조정 (\S23.1) &
+  기존엔 별점이 가격신호를 4-5배 압도(비싸도 인기 상점이 항상 이김) $\to$ 재조정 후 더 저렴한 쪽으로 선택 이동 확인 \\ \hline
+\end{tabularx}
+
+\vspace{3mm}
+\noindent{\large\bfseries 2. 실패 사례 — 대출·대차거래·선도계약 (노란 부서 3곳)}
+
+\vspace{1mm}
+\noindent\begin{tabularx}{\linewidth}{|X|c|c|c|}
+\hline
+\textbf{상품} & \textbf{마케팅 투입} & \textbf{실제 성사} & \textbf{전환율} \\ \hline
+대출 (loan\_engine.py) & 모집광고 1,286회+핀포인트 988회=2,274회 & 평생 3건, 장부엔 1건만 남음 & \textbf{0.13\%} \\ \hline
+대차거래 (repo\_engine.py) & 광고 160회 & 0건 & \textbf{0\%} \\ \hline
+선도계약 (futures\_engine.py) & 5분마다 발행 시도 & claim 1건(가장 초기)뿐 & 사실상 \textbf{0\%대} \\ \hline
+\end{tabularx}
+
+\vspace{2mm}
+\fbox{\begin{minipage}{\linewidth}
+\footnotesize\textbf{왜 실패했나(근본 원인 하나):} 세 상품 전부 \texttt{market.ourolabs.ai/agent.md}가 정의하는 표준 프로토콜(구매협상·포럼포스트·투표)에 속하지 않는다.
+전부 ``포럼에 \texttt{[LOAN REQUEST] <}금액\texttt{>} 같은 우리가 정한 문구를 올리거나, 구매 메시지에 우리가 발급한 코드를 인용해야'' 작동하는 \textbf{자체 발명 텍스트 규약}이다.
+상대 에이전트가 ①우리 글을 읽고 ②우리 태그를 인식하고 ③자기 판단으로 그 형식에 맞춰 행동, 세 단계를 전부 통과해야 하는데 다른 학생 에이전트 대부분은 표준 협상만 구현했을 가능성이 높다 ---
+구현 결함이 아니라 ``상대가 비표준 규약을 자발적으로 따라줘야 하는'' 구조 자체의 한계다. 유일한 성사 사례(차주 q00)도 독촉장 1,521회에 상환 0원으로 끝남 --- 회수도 같은 이유로 실패.
+\end{minipage}}
+
+\vspace{3mm}
+\noindent{\large\bfseries 3. 정직하게 밝히는 것 — 이번 개정에서 코드 추적으로 새로 확인}
+
+\vspace{1mm}
+\fbox{\begin{minipage}{\linewidth}
+\footnotesize
+\textbf{(1) strategy.json에 선언만 되고 어떤 코드도 읽지 않는 키 10개:} \texttt{true\_short\_engine, bond\_securitization\_short, market\_maker\_hegemony, supply\_scan\_interval\_sec, lending\_repo, synthetic\_short, perishable\_decay\_short, forum\_influencer, bankruptcy\_hard\_guard, forum\_agenda} --- 전부 \texttt{grep}으로 전수 확인, 참조하는 코드 0건.\\[1mm]
+\textbf{(2) ``부채 출자전환(M\&A)'' 기능은 목록만 쓰고 실행은 안 함:} \texttt{strategy\_daemon.py}가 부실 차주 후보를 \texttt{target\_debtors}에 적어두기만 하고, 그 값을 읽어 실제로 인수/할인 처리하는 코드는 어디에도 없다. ``자회사 등록'' 함수(\texttt{register\_subsidiary})는 정의돼 있지만 호출하는 곳이 전혀 없다.\\[1mm]
+\textbf{왜 알리는가:} 최종 성적(샵 0.160/바이어 0.374)은 이 유령 기능들과 무관하게 \textbf{실제로 작동한 로직만으로} 나온 숫자다 --- 화려한 설계보다 실제로 작동하는 소수의 메커니즘이 점수를 만든다는 걸 다시 보여준다.
+\end{minipage}}
+
+\vspace{3mm}
+\noindent{\large\bfseries 4. Round 4로 이어지는 교훈}
+\begin{itemize}[nosep,leftmargin=5mm]\footnotesize
+\item 비표준 프로토콜은 상대가 안 따라오면 전환율이 0으로 수렴한다 --- Round 4는 표준 체크아웃/정산(\texttt{checkout\_jwt}, \texttt{/api/settle})이 있으니 그 경로를 우선한다.
+\item 상위권은 복잡한 금융공학이 아니라 거래량$\times$정직성으로 이겼다(REPORT.md \S5) --- 새 수익원을 추가할 때 핵심 판매 루프보다 우선순위를 높이지 않는다.
+\item 설정(config)에 넣은 것과 실제로 실행되는 코드를 구분해서 기록해야 한다 --- \S3의 유령 설정·미완성 M\&A가 그 교훈이다.
+\end{itemize}
 
 \end{document}
