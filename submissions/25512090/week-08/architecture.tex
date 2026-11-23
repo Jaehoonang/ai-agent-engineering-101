@@ -1,85 +1,115 @@
 \documentclass[landscape,11pt]{article}
 \usepackage{fontspec}
 \setmainfont{Malgun Gothic}
-\usepackage[margin=0.9cm]{geometry}
+\usepackage[margin=0.7cm]{geometry}
 \usepackage{xcolor}
 \usepackage{array}
 \usepackage{enumitem}
 \usepackage{amsmath}
 \usepackage{tabularx}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
 \pagestyle{empty}
 \newfontfamily\codefont{Consolas}
 
-% ---- one self-contained department card: #1 title #2 file #3 status-color #4 status-text #5 body
-\newcommand{\deptbox}[5]{%
-  \fbox{\begin{minipage}[t][3.9cm][t]{4.55cm}
-    \colorbox{#3}{\makebox[\linewidth][l]{\small\bfseries\strut~#1}}\\[1mm]
-    {\scriptsize\codefont #2}\\[0.5mm]
-    {\scriptsize\bfseries #4}\\[1mm]
-    {\scriptsize #5}
-  \end{minipage}}%
-}
+\tikzstyle{actor}=[rectangle, rounded corners, draw=black, thick, fill=gray!12, text width=3.3cm, align=center, font=\scriptsize, minimum height=1.3cm, inner sep=2pt]
+\tikzstyle{datastore}=[cylinder, shape border rotate=90, draw=black, thick, fill=orange!18, aspect=0.2, text width=2.5cm, align=center, font=\scriptsize, minimum height=1.7cm, inner sep=1pt]
+\tikzstyle{teamok}=[rectangle, rounded corners, draw=black, thick, fill=green!22, text width=3.3cm, align=center, font=\scriptsize, minimum height=1.6cm, inner sep=2pt]
+\tikzstyle{teamwarn}=[rectangle, rounded corners, draw=black, thick, fill=yellow!40, text width=3.3cm, align=center, font=\scriptsize, minimum height=1.6cm, inner sep=2pt]
+\tikzstyle{result}=[rectangle, draw=black, thick, fill=blue!18, text width=3.3cm, align=center, font=\scriptsize\bfseries, minimum height=1.2cm]
 
 \begin{document}
 
-% ============================================================ PAGE 1: ORG CHART, ONE BOX PER DEPARTMENT
+% ============================================================ PAGE 1: RELATIONSHIP DIAGRAM
 \begin{center}
-{\Large\bfseries Jaehoonang 에이전트 조직도 (Round 3 / Week 8 개정판 2)}\\[1mm]
-{\footnotesize 학번 25512090 \quad 마켓 \texttt{market.ourolabs.ai} \quad 하니스 \texttt{scripts/market\_kit.py}(읽기전용) \quad
+{\Large\bfseries Jaehoonang 에이전트 관계도 (Round 3 / Week 8 개정판 3)}\\[1mm]
+{\footnotesize 학번 25512090 \quad 마켓 \texttt{market.ourolabs.ai} \quad
 최종 성적: 샵 ALL 0.160 + 바이어 ALL 0.374 = 0.396, 학생 46명 중 42위 (\texttt{/api/board} 실측)}
 \end{center}
 
+\vspace{1mm}
+\noindent\footnotesize\textbf{읽는 법:} 상자 = 부서/자원, 화살표 = 데이터나 돈이 실제로 흐르는 방향. \colorbox{green!22}{\strut~초록~}=작동 \colorbox{yellow!40}{\strut~노랑~}=거의 미작동(2페이지) \colorbox{orange!18}{\strut~주황 원통~}=공유 파일 \colorbox{blue!18}{\strut~파랑~}=최종 점수.
+{\color{blue}\textbf{파랑 화살표}}=돈이 오가는 길 \quad {\color{violet}\textbf{보라}}=신용등급이 도는 길 \quad {\color{orange!80!black}\textbf{주황}}=공유 설정이 도는 길 \quad {\color{teal}\textbf{초록 점선}}=판매기록$\to$재입고 \quad {\color{gray}\textbf{회색}}=포럼 게시 큐.
+
 \vspace{2mm}
-\noindent\footnotesize\textbf{읽는 법:} 아래 10개 상자가 실제로 코드로 짜서 돌린 부서(팀) 전부다. 서로 선으로 안 이었다 — 각 부서는 독립된 파일/클래스라 따로 떼서 봐도 이해된다.
-\colorbox{green!25}{\strut~초록 제목~} = 라운드 내내 실제로 작동하며 점수에 기여.
-\colorbox{yellow!40}{\strut~노란 제목~} = 코드는 정상 동작했지만 거래가 거의/전혀 안 붙음. 자세한 원인은 2페이지.
-
-\vspace{3mm}
 \begin{center}
-\textbf{\normalsize 거래실행본부 — 손님 응대 + 우리가 사는 쪽, 샵 book / 바이어 saved 점수에 직접 연결}\\[2mm]
-\deptbox{1. 가격팀}{seller.py / PricingTeam}{green!25}{상태: 작동}
-  {원가 $\times$ 마크업으로 호가 계산. 오래 안 팔리면 시간이 갈수록 자동 할인, 최저가는 원가+1\%(손해는 절대 안 봄).}
-\hspace{2mm}
-\deptbox{2. 로열티팀}{seller.py / LoyaltyTeam}{green!25}{상태: 작동}
-  {첫 손님 5\% 환영 할인. 재구매 손님에게는 ``더 낸 만큼'' 정확히 바우처로 환급.}
-\hspace{2mm}
-\deptbox{3. 교차판매팀}{seller.py / CrossSellTeam}{green!25}{상태: 작동(보조)}
-  {결제 메시지에 대출/담보대출 코드가 같이 오면 그 자리에서 상환 처리까지 끼워 넣음.}
-\hspace{2mm}
-\deptbox{4. 구매협상팀}{market\_buyer.py}{green!25}{상태: 작동, 이번에 가장 크게 개선}
-  {우리가 사는 쪽일 때: 진짜 재고 있는 가게만 추려 가격을 협상. 체결률 8.6\%$\to$33.3\%(2페이지 성공 사례 \#1,\#2).}
-\hspace{2mm}
-\deptbox{5. 대출팀}{loan\_engine.py}{yellow!40}{상태: 거의 미작동}
-  {다른 가게에 신용으로 물건을 사줘(=대출) 이자 받기. 광고 2,274회, 성사 3건(0.13\%), 상환 0건. 2페이지 실패 사례 참고.}
+\resizebox{!}{0.78\textheight}{%
+\begin{tikzpicture}[>={Stealth[length=2.2mm]}, every edge/.style={draw, thick}]
 
-\vspace{3mm}
-\deptbox{6. 대차거래팀}{repo\_engine.py}{yellow!40}{상태: 미작동}
-  {담보 잡고 돈을 빌려주며 양도 가능한 ``신용 토큰''을 발행. 광고 160회, 성사 0건.}
-\hspace{2mm}
-\deptbox{7. 선도계약팀}{futures\_engine.py}{yellow!40}{상태: 미작동}
-  {``지금 가격에 나중에 사겠다'' 약정서 발행하고 웃돈을 받음. 성사 사실상 0\%대.}
-\hspace{2mm}
-\deptbox{8. 신용평가팀}{hegemony\_engine.py}{green!25}{상태: 작동}
-  {다른 가게의 공개 리뷰를 보고 AAA$\sim$CCC 등급을 매김. 대출팀·구매협상팀이 이 등급을 사용.}
-\hspace{2mm}
-\deptbox{9. 광고팀}{forum\_agent.py / AdTeam}{green!25}{상태: 작동, 좋아요 22배}
-  {포럼 글에 ``진짜 거래 번호(refs)''를 붙여 올림 — 순수 광고 문구보다 훨씬 잘 먹힘(2페이지 성공 사례 \#4).}
-\hspace{2mm}
-\deptbox{10. 구매상담팀}{forum\_agent.py / PurchaseTeam}{green!25}{상태: 작동}
-  {포럼에 ``이거 삽니다'' 글이 오면, 우리가 진짜 갖고 있는 재고일 때만 답장(없는 걸 있다고 안 함).}
-\end{center}
+ % ---- row: external actors
+ \node[actor] (cust)   at (3,15)  {\textbf{고객}\\(customers, A2A)};
+ \node[actor] (market) at (12,15) {\textbf{마켓}\\API·포럼·보드\\(읽기전용 하니스)};
+ \node[actor] (other)  at (21,15) {\textbf{다른 가게들}\\(other shops, A2A)};
 
-\vspace{3mm}
-\begin{center}
-\textbf{\normalsize 전사 공통 자원 — 특정 부서가 아니라 모두가 같이 쓰는 것}\\[2mm]
-\deptbox{모델 (설계 전용)}{agent.json harness}{gray!20}{런타임엔 미사용}
-  {Claude Sonnet 5 = 거시전략(strategy\_daemon.py) 설계, Claude Haiku 4.5 = 8개 팀 실시간 로직 설계. 실제 라운드 중엔 LLM API를 한 번도 안 부름 — 전부 결정론적 Python.}
-\hspace{2mm}
-\deptbox{공유 설정 strategy.json}{strategy\_daemon.py}{gray!20}{일부만 실사용}
-  {마크업·보증시간·로열티 비율 등은 실제로 쓰임. 하지만 선언된 키 10개는 어떤 코드도 안 읽는 ``유령 설정''(2페이지 정직 보고).}
-\hspace{2mm}
-\deptbox{안전장치 4가지}{(all departments)}{gray!20}{전부 적용 중}
-  {①원가 밑으로 안 팜 ②잔고 안전선 밑이면 매입/대출 중단 ③협상 상한 1.25$\times$list ④없는 재고는 없다고 답함.}
+ % ---- row: shared data stores
+ \node[datastore] (cfg)    at (7,11.6)  {공유 설정\\\codefont strategy.json};
+ \node[datastore] (credit) at (12,11.6) {신용등급\\\codefont credit\_ratings.json};
+ \node[datastore] (mem)    at (17,11.6) {공유 기억\\\codefont memory\_store.json};
+
+ % ---- row: 거래실행본부 (6)
+ \node[teamok]   (price)   at (0.8,8)  {1 가격팀\\\codefont seller.py};
+ \node[teamok]   (loyalty) at (4.6,8)  {2 로열티팀\\\codefont seller.py};
+ \node[teamok]   (cross)   at (8.4,8)  {3 교차판매팀\\\codefont seller.py};
+ \node[teamok]   (buyer)   at (12.2,8) {4 구매협상팀\\\codefont market\_buyer.py};
+ \node[teamwarn] (loan)    at (16.4,8) {5 대출팀\\\codefont loan\_engine.py};
+ \node[teamwarn] (repo)    at (20.6,8) {6 대차거래팀\\\codefont repo\_engine.py};
+
+ % ---- row: 시장정보·홍보본부 (4) + 선도계약팀
+ \node[teamwarn] (fut)   at (2.5,4.4)  {7 선도계약팀\\\codefont futures\_engine.py};
+ \node[teamok]   (hege)  at (8,4.4)    {8 신용평가팀\\\codefont hegemony\_engine.py};
+ \node[teamok]   (ad)    at (14,4.4)   {9 광고팀\\\codefont forum\_agent.py};
+ \node[teamok]   (pur)   at (20,4.4)   {10 구매상담팀\\\codefont forum\_agent.py};
+
+ % ---- forum queue
+ \node[datastore] (outbox) at (12,1.2) {포럼 게시 큐\\\codefont outbox.jsonl};
+
+ % ---- results
+ \node[result] (book)  at (4,-2.2)  {샵 book 점수\\0.160};
+ \node[result] (saved) at (20,-2.2) {바이어 saved 점수\\0.374};
+
+ % ============== EDGES: money (blue)
+ \draw[->, blue, thick] (cust) -- (price);
+ \draw[->, blue, thick] (cust) to[bend left=8] (loyalty);
+ \draw[->, blue, thick] (cust) to[bend right=8] (cross);
+ \draw[->, blue, thick] (price) -- (book);
+ \draw[->, blue, thick] (loyalty) to[bend left=10] (book);
+ \draw[->, blue, thick] (cross) to[bend right=14] (book);
+ \draw[<->, blue, thick] (buyer) -- (other);
+ \draw[->, blue, thick] (buyer) -- (saved);
+
+ % ============== EDGES: trust (violet)
+ \draw[->, violet, thick] (market) -- (hege);
+ \draw[->, violet, thick] (hege) -- (credit);
+ \draw[->, violet, thick] (credit) to[bend right=10] (loan);
+ \draw[->, violet, thick] (credit) to[bend left=10] (repo);
+ \draw[->, violet, thick] (credit) -- (buyer);
+
+ % ============== EDGES: config (orange)
+ \draw[->, orange!80!black, thick] (market) to[bend left=20] (cfg);
+ \draw[->, orange!80!black, thick] (cfg) -- (price);
+ \draw[->, orange!80!black, thick] (cfg) to[bend right=8] (loyalty);
+ \draw[->, orange!80!black, thick] (cfg) to[bend left=6] (buyer);
+ \draw[->, orange!80!black, thick] (cfg) to[bend right=25] (fut);
+
+ % ============== EDGES: memory (teal dashed)
+ \draw[->, teal, thick, dashed] (price) to[bend right=12] (mem);
+ \draw[->, teal, thick, dashed] (mem) to[bend right=12] (buyer);
+
+ % ============== EDGES: loan/repo ledgers feed cross-sell + priority purchase (black dashed, short)
+ \draw[->, black, dashed] (loan) to[bend left=15] (cross);
+ \draw[->, black, dashed] (repo) to[bend right=15] (cross);
+ \draw[->, black, dashed] (loan) to[bend right=30] node[right,font=\tiny]{우선구매} (buyer);
+
+ % ============== EDGES: forum queue (gray)
+ \draw[->, gray, thick] (loan) -- (outbox);
+ \draw[->, gray, thick] (repo) -- (outbox);
+ \draw[->, gray, thick] (fut) -- (outbox);
+ \draw[->, gray, thick] (ad) -- (outbox);
+ \draw[->, gray, thick] (pur) -- (outbox);
+ \draw[->, gray, thick] (outbox) to[bend right=15] (market);
+
+\end{tikzpicture}%
+}
 \end{center}
 
 \newpage

@@ -24,27 +24,79 @@
 ### 0.3 부서 개수에 대한 정정
 예전 `REPORT.md`/`architecture.tex` 1차판은 "8개 팀"이라고 썼지만, 실제로 독립된 클래스/파일로 짜서 돌린 건 **10개**다(가격팀·로열티팀·교차판매팀·구매협상팀·대출팀·대차거래팀·선도계약팀·신용평가팀·광고팀·구매상담팀). 이번 개정부터 10개로 정확히 센다.
 
-## 1. 전체 그림
+## 1. 전체 그림 — 관계도 (`architecture.pdf` 1페이지와 같은 그림, 마크다운 버전)
+
+상자 = 부서/자원, 화살표 = 데이터나 돈이 실제로 흐르는 방향(화살표 위 글자가 "무엇이 오가는지"). 초록 = 작동, 노랑 = 거의 미작동(§7), 주황 원통 = 공유 파일, 파랑 = 최종 점수.
 
 ```mermaid
-flowchart TD
-    ROOT["Jaehoonang<br/>샵(파는 쪽) + 바이어(사는 쪽)"]
-    ROOT --> G1["거래실행본부 (1~6)<br/>점수에 직접 연결"]
-    ROOT --> G2["시장정보·홍보본부 (7~10)<br/>신뢰·발견 가능성 지원"]
-    ROOT --> INFRA["전사 공통 자원<br/>모델 / 공유설정 / 안전장치"]
-    G1 --> D1["1 가격팀 ✅"]
-    G1 --> D2["2 로열티팀 ✅"]
-    G1 --> D3["3 교차판매팀 ✅"]
-    G1 --> D4["4 구매협상팀 ✅ (최다 개선)"]
-    G1 --> D5["5 대출팀 ⚠️"]
-    G1 --> D6["6 대차거래팀 ⚠️"]
-    G2 --> D7["7 선도계약팀 ⚠️"]
-    G2 --> D8["8 신용평가팀 ✅"]
-    G2 --> D9["9 광고팀 ✅ (좋아요 22배)"]
-    G2 --> D10["10 구매상담팀 ✅"]
+flowchart TB
+    classDef ok fill:#c8f7c5,stroke:#333,stroke-width:1px;
+    classDef warn fill:#fff3b0,stroke:#333,stroke-width:1px;
+    classDef data fill:#ffe0b3,stroke:#333,stroke-width:1px;
+    classDef actor fill:#eeeeee,stroke:#333,stroke-width:1px;
+    classDef result fill:#cfd8ff,stroke:#333,stroke-width:2px;
+
+    CUST[고객<br/>customers, A2A]:::actor
+    MKT[마켓<br/>API·포럼·보드]:::actor
+    OTHER[다른 가게들<br/>other shops, A2A]:::actor
+
+    CFG[("공유 설정<br/>strategy.json")]:::data
+    CREDIT[("신용등급<br/>credit_ratings.json")]:::data
+    MEM[("공유 기억<br/>memory_store.json")]:::data
+    OUTBOX[("포럼 게시 큐<br/>outbox.jsonl")]:::data
+
+    PRICE["1 가격팀<br/>seller.py"]:::ok
+    LOY["2 로열티팀<br/>seller.py"]:::ok
+    CROSS["3 교차판매팀<br/>seller.py"]:::ok
+    BUYER["4 구매협상팀<br/>market_buyer.py"]:::ok
+    LOAN["5 대출팀<br/>loan_engine.py"]:::warn
+    REPO["6 대차거래팀<br/>repo_engine.py"]:::warn
+    FUT["7 선도계약팀<br/>futures_engine.py"]:::warn
+    HEGE["8 신용평가팀<br/>hegemony_engine.py"]:::ok
+    AD["9 광고팀<br/>forum_agent.py"]:::ok
+    PUR["10 구매상담팀<br/>forum_agent.py"]:::ok
+
+    BOOK[["샵 book 점수<br/>0.160"]]:::result
+    SAVED[["바이어 saved 점수<br/>0.374"]]:::result
+
+    CUST -->|구매 요청| PRICE
+    CUST -->|구매 요청| LOY
+    CUST -->|구매 요청| CROSS
+    CUST -->|수요글| PUR
+    PRICE --> BOOK
+    LOY --> BOOK
+    CROSS --> BOOK
+    BUYER <-->|협상 후 영수증| OTHER
+    BUYER --> SAVED
+
+    MKT -->|공개 리뷰/원장| HEGE
+    HEGE -->|등급 산출| CREDIT
+    CREDIT -->|금리 결정| LOAN
+    CREDIT -->|금리 결정| REPO
+    CREDIT -->|상점 선택 가점| BUYER
+
+    MKT -->|상위상점 데이터| CFG
+    CFG -->|마크업·보증시간| PRICE
+    CFG -->|로열티 비율| LOY
+    CFG -->|협상 상한| BUYER
+    CFG -->|마진율| FUT
+
+    PRICE -.->|판매기록| MEM
+    MEM -.->|회전율| BUYER
+
+    LOAN -.->|상환 인식| CROSS
+    REPO -.->|토큰 사용| CROSS
+    LOAN -.->|우선구매| BUYER
+
+    LOAN --> OUTBOX
+    REPO --> OUTBOX
+    FUT --> OUTBOX
+    AD --> OUTBOX
+    PUR --> OUTBOX
+    OUTBOX -->|드레인| MKT
 ```
 
-전부 자기 파일/클래스를 가진 독립 부서라, 트리의 선을 몰라도 아래 §2부터 하나씩 읽으면 이해된다. ✅ = 라운드 내내 실제로 작동. ⚠️ = 코드는 끝까지 정상 동작했지만 거래가 거의/전혀 안 붙음.
+전부 자기 파일/클래스를 가진 독립 부서라, 화살표를 하나씩 따라가면 "누가 누구한테서 뭘 받아서 뭘 하는지"가 바로 보인다. 자세한 설명은 아래 §2부터 부서별로.
 
 ## 2. 거래실행본부 — 1~6번 부서 (샵 book / 바이어 saved 점수에 직접 연결)
 
