@@ -12,19 +12,19 @@ Round 3 정산 거래: **샵 236건, 바이어 11,843건** (각 20건 이상 충
 |---|---|
 | **① 모델** | 거시 전략 Claude Sonnet 5(`strategy_daemon.py`, 30분 주기 — 경쟁사/부실채권 스캔) + 실시간 실행 Claude Haiku 4.5(8개 부서 프로세스 전체, 이벤트 단위). `agent.json`의 `harness.macro_strategy_model`/`micro_execution_model`로 명시. |
 | **② 공유 컨텍스트** (여러 팀이 같이 보는 것만) | `strategy_daemon.py`→`strategy.json`(모든 팀이 읽는 공유 설정, meta-harness), `memory_manager.py`/`memory_store.json`(로열티팀+거시모델이 같이 쓰는 판매기록), `credit_ratings.json`(신용평가팀이 만들고 대출·구매팀이 같이 읽는 공유 출력). |
-| **③ 8개 팀** (팀마다 자기 memory 파일을 따로 보유) | **거래실행팀**: 가격팀(`seller.py` PricingTeam, `pricing_team_memory.json`), 로열티팀(LoyaltyTeam, `loyalty_team_memory.json`), 교차판매팀(CrossSellTeam, `crosssell_team_memory.json`), `market_buyer.py`(`negotiation_log.jsonl`), `loan_engine.py`(`loan_team_memory.json`), `repo_engine.py`(`repo_team_memory.json`). **시장정보·홍보팀**: `futures_engine.py`(전용 memory 없이 장부만), `hegemony_engine.py`(`credit_team_memory.json`), 광고팀(`forum_agent.py` AdTeam, `ad_team_memory.json`), 구매팀(PurchaseTeam, `purchase_team_memory.json`). `team_memory.py`는 이 모든 팀별 memory 파일이 공통으로 쓰는 영속화 라이브러리(쓰로틀 타임스탬프+카운터). |
+| **③ 10개 팀** (팀마다 자기 memory 파일을 따로 보유) | **거래실행팀(6)**: 가격팀(`seller.py` PricingTeam, `pricing_team_memory.json`), 로열티팀(LoyaltyTeam, `loyalty_team_memory.json`), 교차판매팀(CrossSellTeam, `crosssell_team_memory.json`), `market_buyer.py`(`negotiation_log.jsonl`), `loan_engine.py`(`loan_team_memory.json`), `repo_engine.py`(`repo_team_memory.json`). **시장정보·홍보팀(4)**: `futures_engine.py`(전용 memory 없이 장부만), `hegemony_engine.py`(`credit_team_memory.json`), 광고팀(`forum_agent.py` AdTeam, `ad_team_memory.json`), 구매팀(PurchaseTeam, `purchase_team_memory.json`). `team_memory.py`는 이 모든 팀별 memory 파일이 공통으로 쓰는 영속화 라이브러리(쓰로틀 타임스탬프+카운터). ~~이전 판은 "8개 팀"이라고 잘못 셌다 — 10개가 맞다(2026-11-23 정정, ORGANIZATION.md §0.3).~~ |
 | ④ 안전장치 (전부서 공통, 참고) | 원가 하한, 파산 가드, 협상 상한(1.25×list), 재고매칭 게이트 — 부품 자체는 아니지만 모든 툴이 공유하는 구조적 제약이라 조직도에 함께 표시. |
 
 전체 부품 구현 상세는 §1~§18, 발견한 버그와 수정은 §19~§25, 실패한 기능의 원인 분석은 §26.
 
-### 0.3 구조의 독창성 (30%) — 1페이지 LaTeX 조직도(organization chart, 한글)
-`architecture.tex`/`architecture.pdf`(본 디렉터리, `xelatex` + `fontspec`(맑은 고딕) + `forest` 패키지) — 초보자도 바로 읽을 수 있도록 전부 한글 평이한 설명으로 재작성. 에이전트를 루트로 ①모델/②컨텍스트/③툴/④안전장치 4개 분과, ②③은 다시 하위분과(기억/전체설정, 거래실행팀/시장정보팀)로 나눈 2단 조직도. 맨 위에 "읽는 법" 범례를 추가했고, **점선 테두리는 "준비는 했지만 외부 참여가 거의 없었던 기능"**(대출/레포/선도계약, §26 실패 원인 분석과 직접 연결)을 한눈에 표시. 하단에 이번 세션에 발견·역산한 3대 핵심 통찰(§19, §22, §23 근거)을 수식과 함께 정리:
+### 0.3 구조의 독창성 (30%) — `architecture.pdf`(2페이지) + `ORGANIZATION.md`
+`architecture.tex`/`architecture.pdf`(본 디렉터리, `xelatex` + `fontspec`(맑은 고딕) + `tikz` 관계도) — 2026-11-23 개정 3판: 1페이지는 부서·공유자원·외부 액터 16개 노드를 **실제 데이터/돈의 흐름을 색으로 구분한 화살표로 연결한 관계도**(돈=파랑, 신용등급=보라, 공유설정=주황, 판매기록→재입고=초록 점선, 포럼 게시 큐=회색), 2페이지는 성공 사례 전/후 수치표·실패 사례(대출/레포/선도계약) 전환율표·정직 보고 박스·Round 4 교훈. 같은 그림을 `ORGANIZATION.md`에 Mermaid로도 실어 GitHub에서 바로 보이게 했다. 하단에 이번 세션에 발견·역산한 3대 핵심 통찰(§19, §22, §23 근거)을 수식과 함께 정리:
 1. `saved` 공식이 "정가 대비 할인율"이 아니라 "마진 점유율"이라는 걸 패치노트에서 역산 확인하고, 미체결 주문(-1)보다 더 나쁜 가격을 내는 것을 수학적으로 방지하는 1.25배 상한 도출(③ `market_buyer.py`).
 2. 자체 상점 선택 로직이 평판에 가격신호가 묻히는 구조였음을 발견, 저가 우선으로 재조정(③ `market_buyer.py`).
 3. 자체 `find_unit()`의 문자열 포함 방향이 거꾸로였던 버그(재고 있는데 "없다"고 오답)를 라이브 재현으로 확인·수정(③ `seller.py`).
 
 ### 0.4 Round 3 순위 (30%) — Players 테이블 백분위
-보드 Players 테이블(샵 ALL + 바이어 ALL 합산) 실측: 샵 ALL **0.153**(book 0.5+revenue 0.3+stars 0.2 백분위), 바이어 ALL **0.374**(saved 0.5+forum 0.3+deals 0.1+posts 0.1), 합산 **0.527** — 전체 79개 Player 계정 중 **56위**. 추적 지표 상세와 변화 추이는 §19~§25(특히 §22 saved 공식 역산, §25 라운드 종료 임박 재고 청산).
+보드 Players 테이블(샵 ALL + 바이어 ALL 합산) 2026-11-19 중간 실측: 샵 ALL 0.153, 바이어 ALL 0.374, 합산 0.527, 79개 Player 계정 중 56위. **2026-11-23 라운드 종료 후 `/api/board` 최종 재확인**: 샵 ALL **0.160**(book 0.5+revenue 0.3+stars 0.2), 바이어 ALL **0.374**(변동 없음), 학생 간 합산 순위(`student_total`) **0.396**, 학생 46명 중 **42위**. 추적 지표 상세와 변화 추이는 §19~§25(특히 §22 saved 공식 역산, §25 라운드 종료 임박 재고 청산), 최종 수치와 부서별 근거는 `ORGANIZATION.md` §0.1.
 
 ---
 
@@ -45,6 +45,22 @@ Round 3 정산 거래: **샵 236건, 바이어 11,843건** (각 20건 이상 충
 9. **원가 보존 프레임워크**: 원가 이하 판매 절대 거절 및 최소 마크업(1.40배) 자동 적용.
 10. **메모리 매니저 (Sliding Window O(1))**: 대규모 원장(.market/ledger)을 O(1) 복잡도로 슬라이딩 윈도우 집계하여 상점 프로필 및 SKU 거래 속도 추적.
 11. **모델 역할 분리**: 거시 분석(Claude Sonnet 5, 30분 주기)과 실시간 협상/정산(Claude Haiku 4.5)의 완벽한 분업.
+
+### 2.1 정정 (2026-11-23, 코드 재추적) — 위 11개 중 실제로 작동한 건 몇 개인가
+이번 개정에서 `strategy.json`의 모든 키를 `grep`으로 전수 추적하고, 이전에 읽지 않았던 `short_engine.py`를 마저 읽은 뒤 위 11개 항목을 코드와 다시 대조했다. 결과(근거와 전체 설명은 `ORGANIZATION.md` §6):
+
+| 항목 | 판정 | 근거 |
+|---|---|---|
+| 1. 부채 출자전환 M&A | **허위** | `target_debtors`는 `strategy_daemon.py`가 쓰기만 하고 읽는 코드가 없음. `register_subsidiary()`를 호출하는 곳이 전체 저장소에 0건. |
+| 2. 실물 기축 자산 스위핑(Cornering) | **허위** | `SKU_HARDWARE_TOOL_01`이라는 문자열이 코드 전체에 존재하지 않음(실제 앵커 SKU는 `Gea072173`). "60초 간격 20개 선점" 같은 능동 스위핑 루프도 어디에도 없음 — 실제로 있는 건 보유 재고 중 일부를 안 파는 수동 예약(`reserve_target_ratio`)뿐. |
+| 5. 합성 롱/숏 및 식품 감가 숏 | **허위** | `short_engine.py`(`ShortSellingEngine`)는 실존하지만 `evaluate_short_opportunities()`가 `demand.json`을 읽고 개수를 로그로 찍기만 할 뿐, 가격 책정·포지션 기록·매수/매도 어디에도 관여하지 않음(`self.short_positions`는 선언만 되고 끝까지 비어 있음). `true_short_engine`/`synthetic_short`/`perishable_decay_short` 키는 어떤 코드도 읽지 않음. |
+| 6. 포럼 종속 선언 FUD | **허위(조건부)** | "M&A 성사 시" 트리거인데 M&A 자체가 1번 항목대로 한 번도 실행되지 않으므로 이 공시도 실제로 발행된 적이 없음. `forum_influencer` 키도 미사용. |
+| 3, 7, 9, 11 | **사실** | `signaling_warranty_hours`, `dutch_auction_decay`, 원가 하한(`price = max(price, cost+10)`), 듀얼 모델 설계 분업 — 전부 실제 코드에서 확인됨(11번은 설계 단계 분업이지 런타임 의존성 아님, PR_DESCRIPTION.md 참고). |
+| 4. Repo 대출 및 이자 채권화 | **부분 사실** | `repo_engine.py` 코드는 실제로 동작하지만, 광고 160회에 성사 **0건** — "구현"은 됐어도 "수익원"으로는 실패(§26, ORGANIZATION.md §7). |
+| 8. 파산 Hard Guard | **부분 사실** | 잔고 보호 자체는 실제로 작동하지만, `strategy.json`의 `bankruptcy_hard_guard` 키가 아니라 마켓이 내려주는 `.market/inventory.json`의 `bankrupt_line`을 직접 읽어서 동작 — 주장된 메커니즘(설정값)과 실제 동작 경로가 다름. |
+| 10. 메모리 매니저 Sliding Window O(1) | **부분 사실(오귀속)** | `memory_manager.py`엔 슬라이딩 윈도우 알고리즘이 없음 — 평범한 JSON dict 갱신뿐. 실제 날짜별 윈도우 정리(`DAILY_RETENTION_DAYS=30`, 오래된 버킷 자동 삭제)는 별도 파일 `team_memory.py`에 있음 — 엉뚱한 모듈에 공을 돌린 것. |
+
+**집계**: 11개 중 확실히 작동 4개(3,7,9,11), 부분 작동/오귀속 3개(4,8,10), 완전 허위 4개(1,2,5,6). §3 "검증 및 성과"의 "독점 공급 스위핑 확인"·"자회사 편입 공시 정상 발행" 서술도 위 1·2번과 같은 이유로 근거가 없다 — 당시 기록은 그대로 두되 이 정정으로 바로잡는다. 최종 성적(샵 0.160/바이어 0.374, §0.4)은 이 허위 항목들과 무관하게 §19~§25의 실제 수정 사항만으로 나온 숫자다.
 
 ## 3. 검증 및 성과
 - `python scripts/market_kit.py join`을 통한 상시 구동 및 터널링 완료.

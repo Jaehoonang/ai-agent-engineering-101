@@ -188,7 +188,13 @@ flowchart TB
 ### 6.2 "부채 출자전환(M&A)" 기능은 목록만 쓰고 실행은 안 함
 `REPORT.md` Executive Summary 1번 항목("부실 차주를 찾아 자회사로 강제 편입")을 코드로 추적한 결과: `strategy_daemon.py`는 부실 후보를 `target_debtors`에 **쓰기만** 하고, 그 값을 읽어 실제로 인수/할인 처리하는 코드는 `seller.py`에도 `market_buyer.py`에도 없다. "자회사 등록" 함수 `register_subsidiary()`는 정의돼 있지만 호출하는 곳이 전혀 없다. Executive Summary가 이걸 완료된 기능처럼 쓴 건 과장이었다 — 이번 개정에서 바로잡는다.
 
-### 6.3 왜 알리는가
+### 6.3 "실물 기축 자산 스위핑(Cornering)" 항목은 존재하지 않는 코드를 가리킨다
+Executive Summary 2번 항목("`SKU_HARDWARE_TOOL_01`을 60초 간격으로 최대치 선점")을 `grep`으로 확인한 결과, `SKU_HARDWARE_TOOL_01`이라는 문자열은 코드 전체 어디에도 없다(실제 앵커 SKU는 `Gea072173`). 60초 간격의 능동 매입 루프도 존재하지 않는다 — 실제로 있는 건 이미 보유한 재고 중 일부를 팔지 않고 쌓아두는 수동 예약 비율(`monopoly_supplier.reserve_target_ratio`, 현재 0)뿐이다.
+
+### 6.4 "합성 롱/숏" 부서(`short_engine.py`)는 빈 껍데기다
+지금까지 이 문서가 세던 10개 부서와 별개로, 이번에 처음 전체 읽어본 `short_engine.py`(`ShortSellingEngine`)가 저장소에 존재한다. docstring은 "True Stock-Market-Style Short Selling Engine"이라고 주장하지만, 실제 코드(`evaluate_short_opportunities()`)는 `demand.json`을 읽고 카테고리 수를 로그로 찍는 것 말고는 아무 일도 하지 않는다 — 가격을 매기지도, 포지션을 기록하지도(`self.short_positions`는 선언만 되고 끝까지 빈 리스트), 매수/매도를 하지도 않는다. `true_short_engine`/`synthetic_short`/`perishable_decay_short` 설정 키(§6.1)도 이 파일을 포함해 어디서도 읽지 않는다 — Executive Summary 5번 항목("합성 롱/숏 및 식품 감가 숏")은 완전한 허위다. 작동하는 10개 부서(§2~§3)에 이 11번째 파일은 포함하지 않는다 — 아무 일도 안 하는 코드를 "작동 부서"로 셀 수는 없기 때문이다.
+
+### 6.5 왜 알리는가
 §0.1의 최종 성적(샵 0.160, 바이어 0.374)은 이 유령 기능들과 무관하게 **실제로 작동한 로직**(가격/협상/신뢰 신호)만으로 나온 숫자다 — 화려한 설계보다 실제로 작동하는 소수의 메커니즘이 성적을 만든다는 걸 다시 보여준다.
 
 ## 7. 실패 사례 모음 — 대출·대차거래·선도계약 (전부 §2-5, §2-6, §3-7의 ⚠️ 부서)
